@@ -13,6 +13,14 @@ const PRODUCTS = [
   { id: 'faetec', nome: 'Faetec', ico: '🛠️', robo: 'atencao', desc: 'Preparação para o processo seletivo da FAETEC.', ativo: false },
   { id: 'graduacao', nome: 'Graduação', ico: '🎓', robo: 'graduacao', desc: 'Reforço nas disciplinas da faculdade.', ativo: false }
 ];
+// Planos premium. Quando houver link de pagamento (Mercado Pago, Stripe, Hotmart...), preencha "checkout".
+const PLANS = [
+  { id: 'mensal', nome: 'Mensal', preco: 15, meses: 1, checkout: '' },
+  { id: 'trimestral', nome: 'Trimestral', preco: 40, meses: 3, checkout: '' },
+  { id: 'anual', nome: 'Anual', preco: 100, meses: 12, destaque: 'Mais vantajoso', checkout: '' },
+  { id: 'vitalicio', nome: 'Vitalício', preco: 500, meses: 0, checkout: '' }
+];
+const brl = v => 'R$ ' + v.toFixed(2).replace('.', ',');
 // Pose do robô para cada tema de unidade (usada quando a unidade não define "mascot")
 const THEME_ROBO = { sus: 'sus', campo: 'campo', letras: 'estudando', saquarema: 'saquarema', legislacao: 'legislacao' };
 const unitRobo = u => u.mascot || THEME_ROBO[u.theme] || 'notebook';
@@ -193,6 +201,23 @@ function renderLanding() {
       </div>
     </header>
     <section class="land-products" aria-label="Escolha sua trilha">${cards}</section>
+    <section class="premium" aria-labelledby="premium-title">
+      <div class="premium-head">
+        ${mascot(110, 'conquista', { decorative: true })}
+        <div><small class="eyebrow">APROVAÊ+ PREMIUM</small><h2 id="premium-title">Seja premium e tenha acesso a muito aprendizado</h2></div>
+      </div>
+      <div class="plans">${PLANS.map(pl => {
+        const cheio = 15 * pl.meses; const eco = pl.meses > 1 ? Math.round((1 - pl.preco / cheio) * 100) : 0;
+        const sub = pl.meses === 0 ? 'pagamento único • acesso para sempre' : pl.meses === 1 ? 'por mês' : `${brl(pl.preco / pl.meses)} por mês`;
+        return `<div class="plan ${pl.destaque ? 'hot' : ''}">
+          ${pl.destaque ? `<span class="plan-flag">${pl.destaque}</span>` : ''}
+          <b class="plan-name">${pl.nome}</b>
+          <span class="plan-price">${brl(pl.preco)}</span>
+          <small class="plan-sub">${sub}</small>
+          ${eco ? `<span class="plan-eco">economize ${eco}%</span>` : '<span class="plan-eco ghost">&nbsp;</span>'}
+          <button class="btn ${pl.destaque ? 'btn-gold' : 'btn-navy'}" onclick="AP.buy('${pl.id}')">Comprar</button>
+        </div>`; }).join('')}</div>
+    </section>
     <section class="land-how">
       <div class="how"><span>📖</span><b>Aprenda</b><p>Uma lição curta e direta abre cada fase.</p></div>
       <div class="how"><span>🎯</span><b>Pratique</b><p>Questões originais no estilo da banca, com explicação.</p></div>
@@ -765,6 +790,14 @@ window.AP = {
   finishOnb() { S.onb = true; save(); UI.screen = 'tabs'; UI.tab = 'home'; UI.scrollToCurrent = true; render(); },
   // usado pelos testes automáticos
   _debug() { return { UI, S, getQ }; },
+  buy(id) {
+    const pl = PLANS.find(x => x.id === id); if (!pl) return;
+    if (pl.checkout) { window.open(pl.checkout, '_blank', 'noopener'); return; }
+    $layer.innerHTML = `<div class="overlay" onclick="AP.closeSheet()"></div><div class="sheet center-t" role="dialog" aria-modal="true" aria-labelledby="buy-t">
+      ${mascot(110, 'atencao', { decorative: true })}<h3 id="buy-t">Plano ${pl.nome} • ${brl(pl.preco)}</h3>
+      <p class="muted">O pagamento on-line está quase pronto. Assim que for liberado, você poderá assinar por aqui.</p>
+      <div class="stack"><button class="btn btn-navy" onclick="AP.closeSheet()">Entendi</button></div></div>`;
+  },
   closeWelcome() { UI.welcome = false; const el = document.querySelector('.welcome'); if (el) el.remove(); },
   tab(id) { UI.tab = id; UI.sheet = null; UI.screen = 'tabs'; render(); window.scrollTo(0, 0); },
   home() { UI.screen = 'tabs'; UI.tab = UI.backTab || 'home'; UI.lesson = null; UI.quiz = null; UI.backTab = null; UI.scrollToCurrent = UI.tab === 'home'; render(); if (UI.tab !== 'home') window.scrollTo(0, 0); },

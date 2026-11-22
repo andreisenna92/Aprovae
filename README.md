@@ -82,6 +82,10 @@ Nas questões, a alternativa correta pode ficar em qualquer posição (o índice
 
 Temas de ilustração da trilha (`theme` da unidade): `sus`, `campo`, `letras` e `saquarema`. Para criar outro tema, adicione desenhos em `DECOR` e uma lista em `THEMES` no `map.js`.
 
+## Planos premium
+
+Os planos ficam em `PLANS`, no `app.js`. O botão "Comprar" ainda não cobra nada: mostra um aviso de "pagamento em breve". Quando houver link de pagamento (Mercado Pago, Stripe, Hotmart etc.), coloque o link no campo `checkout` do plano e o botão passa a abrir o pagamento.
+
 ## Mascote (robô Aprovaê+)
 
 Cada pose é um arquivo próprio em `assets/mascote/`: `robo-principal`, `robo-joinha`, `robo-estudando`, `robo-notebook`, `robo-sus`, `robo-saquarema`, `robo-legislacao`, `robo-graduacao`, `robo-campo`, `robo-conquista`, `robo-duvida`, `robo-atencao`, `robo-revisao`, `robo-planejamento` e `robo-comemoracao`.
