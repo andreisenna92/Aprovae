@@ -7,12 +7,15 @@
 
 /* ------------------------------ PRODUTOS ------------------------------ */
 const PRODUCTS = [
-  { id: 'concursos', nome: 'Concursos', ico: '🏛️', robo: 'notebook', desc: 'Trilhas guiadas pelo edital do seu concurso público.', ativo: true },
+  { id: 'concursos', nome: 'Concursos', ico: '🏛️', robo: 'notebook', desc: 'Trilhas guiadas pelo edital do seu concurso público.', ativo: true,
+    listaSub: 'Escolha o concurso que você vai prestar.', listaBreve: ['Novos concursos em breve', 'Estamos preparando as próximas trilhas a partir dos editais publicados.'], rotulo: 'CONCURSO' },
+  { id: 'encceja', nome: 'ENCCEJA', ico: '📚', robo: 'revisao', desc: 'Conclua o ensino médio com aulas curtas, questões e redação.', ativo: true,
+    listaSub: 'Escolha a edição do exame.', listaBreve: ['Ensino Fundamental em breve', 'A trilha do Encceja Ensino Fundamental está sendo preparada.'], rotulo: 'EXAME' },
   { id: 'enem', nome: 'ENEM', ico: '📝', robo: 'estudando', desc: 'Todas as áreas do ENEM, com foco no que mais cai.', ativo: false },
-  { id: 'encceja', nome: 'ENCCEJA', ico: '📚', robo: 'revisao', desc: 'Conclua o ensino fundamental ou médio no seu ritmo.', ativo: false },
   { id: 'faetec', nome: 'Faetec', ico: '🛠️', robo: 'atencao', desc: 'Preparação para o processo seletivo da FAETEC.', ativo: false },
   { id: 'graduacao', nome: 'Graduação', ico: '🎓', robo: 'graduacao', desc: 'Reforço nas disciplinas da faculdade.', ativo: false }
 ];
+const productOf = c => PRODUCTS.find(p => p.id === ((c && c.produto) || 'concursos'));
 // Planos premium. Quando houver link de pagamento (Mercado Pago, Stripe, Hotmart...), preencha "checkout".
 const PLANS = [
   { id: 'mensal', nome: 'Mensal', preco: 15, meses: 1, checkout: '' },
@@ -32,8 +35,8 @@ const $layer = document.getElementById('layer');
 const shuffle = a => { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
 const todayStr = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 const yesterdayStr = () => { const d = new Date(); d.setDate(d.getDate() - 1); return todayStr(d); };
-const fmtDate = ([y, m, d]) => String(d).padStart(2, '0') + '/' + String(m + 1).padStart(2, '0') + '/' + y;
-const daysTo = ([y, m, d]) => Math.max(0, Math.ceil((new Date(y, m, d) - new Date(new Date().toDateString())) / 86400000));
+const fmtDate = (a) => !a ? 'a definir' : (([y, m, d]) => String(d).padStart(2, '0') + '/' + String(m + 1).padStart(2, '0') + '/' + y)(a);
+const daysTo = (a) => !a ? null : (([y, m, d]) => Math.max(0, Math.ceil((new Date(y, m, d) - new Date(new Date().toDateString())) / 86400000)))(a);
 const daysBetween = (a, b) => Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 86400000);
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 const plural = (n, s, p) => n + ' ' + (n === 1 ? s : p);
@@ -100,11 +103,11 @@ function confetti() {
 }
 
 /* ------------------------------ ROTAS ------------------------------ */
-// #inicio  •  #concursos  •  #<id-do-concurso>
+// #inicio  •  #<produto> (lista)  •  #<id-do-concurso>
 let R = 'inicio';
 function readRoute() {
   const h = (location.hash || '').replace('#', '');
-  R = h === 'concursos' ? 'concursos' : CONCURSOS[h] ? h : 'inicio';
+  R = PRODUCTS.some(p => p.ativo && p.id === h) ? 'list:' + h : CONCURSOS[h] ? h : 'inicio';
 }
 function go(h) { if (location.hash === '#' + h) { readRoute(); render(); } else location.hash = h; window.scrollTo(0, 0); }
 
@@ -113,13 +116,15 @@ let K = null;   // concurso ativo
 let S = null;   // progresso salvo
 let UI = null;  // estado da tela
 let FASES = {}, FLASH = [];
-const defaultState = () => ({ onb: false, cargo: null, goal: 50, xp: 0, streak: 0, lastDay: null, day: { d: null, xp: 0 }, done: {}, stats: { esp: { r: 0, t: 0 }, port: { r: 0, t: 0 }, leg: { r: 0, t: 0 } }, errors: {}, cards: {}, medals: {}, sound: true });
+const defaultState = () => ({ onb: false, cargo: null, goal: 50, xp: 0, streak: 0, lastDay: null, day: { d: null, xp: 0 }, done: {}, stats: {}, errors: {}, cards: {}, medals: {}, sound: true });
 const keyOf = id => 'aprovae:v2:' + id;
 function openConcurso(id) {
   if (K && K.id === id) return;
   K = CONCURSOS[id];
   S = Object.assign(defaultState(), store.get(keyOf(id)) || {});
-  S.medals = S.medals || {};
+  S.medals = S.medals || {}; S.drafts = S.drafts || {};
+  Object.keys(K.areas).forEach(k => { S.stats[k] = S.stats[k] || { r: 0, t: 0 }; });
+  if (Object.keys(K.cargos).length === 1 && !S.cargo) S.cargo = Object.keys(K.cargos)[0];
   const away = S.lastDay ? daysBetween(S.lastDay, todayStr()) : null;
   UI = { away, welcome: true, tab: 'home', screen: 'tabs', onbStep: 0, sheet: null, fc: { filter: 'todas', idx: 0, only: false }, topicFilter: 'todas', scrollToCurrent: true };
   FASES = {}; K.units.forEach(u => u.fases.forEach(f => { FASES[f.id] = { f, u }; }));
@@ -140,6 +145,12 @@ const visibleCards = () => FLASH.filter(c => FASES[c.fid] && (!FASES[c.fid].f.ca
 const fcKnown = () => visibleCards().filter(c => S.cards[c.id] === 'known').length;
 const getQ = key => { const [fid, qi] = key.split('#'); const e = FASES[fid]; return e && e.f.quiz[+qi] ? { ...e.f.quiz[+qi], fase: e.f, unit: e.u } : null; };
 const cargo = () => K.cargos[S.cargo] || Object.values(K.cargos)[0];
+const singleCargo = () => Object.keys(K.cargos).length === 1;
+const turnoTxt = () => cargo().turnoTxt || ('Turno da ' + cargo().turno);
+const provaTxt = () => K.prova ? 'Prova em ' + fmtDate(K.prova) : 'Prova: ' + (K.provaTexto || 'data a definir');
+const cdNum = () => { const d = daysTo(K.prova); return d === null ? '<div class="cd-num tbd"><b>?</b><small>DATA</small></div>' : `<div class="cd-num"><b>${d}</b><small>DIAS</small></div>`; };
+const LX = () => K.aulaLabel ? { n: 'aula', N: 'Aula', cards: 'slides da aula' } : { n: 'lição', N: 'Lição', cards: 'cartões de lição' };
+const guiaNome = () => (K.guia && K.guia.nav) || 'Edital';
 
 function addXP(n) {
   const t = todayStr();
@@ -151,10 +162,15 @@ function addXP(n) {
   return before < S.goal && S.day.xp >= S.goal;
 }
 function projection() {
+  if (K.scoring === 'areas') {
+    const meta = K.metaAcerto || 0.7;
+    const rows = Object.entries(K.areas).map(([k, a]) => { const s = S.stats[k] || { r: 0, t: 0 }; return { k, a, s, acc: s.t ? s.r / s.t : null }; });
+    return { mode: 'areas', rows, meta, hit: rows.filter(r => r.acc !== null && r.acc >= meta).length };
+  }
   const rows = Object.entries(K.areas).map(([k, a]) => { const s = S.stats[k] || { r: 0, t: 0 }; const acc = s.t ? s.r / s.t : null; return { k, a, s, acc, proj: acc === null ? null : acc * a.max }; });
   const ready = rows.every(r => r.acc !== null);
   const proj = ready ? Math.round(rows.reduce((t, r) => t + r.proj, 0)) : null;
-  return { rows, proj, pass: proj !== null && proj >= K.corte && rows.every(r => r.s.r > 0) };
+  return { mode: 'weighted', rows, proj, pass: proj !== null && proj >= K.corte && rows.every(r => r.s.r > 0) };
 }
 
 /* =====================================================================
@@ -165,7 +181,7 @@ function render() {
   $layer.innerHTML = '';
   document.body.className = '';
   if (R === 'inicio') return renderLanding();
-  if (R === 'concursos') return renderConcursos();
+  if (R.startsWith('list:')) return renderLista(R.slice(5));
   openConcurso(R);
   document.title = 'Aprovaê+Concursos — ' + K.nome;
   if (!S.onb) return renderOnb();
@@ -181,7 +197,7 @@ function renderLanding() {
   document.title = 'Aprovaê — Plataforma de aprendizagem';
   document.body.className = 'page-landing';
   const cards = PRODUCTS.map(p => `
-    <${p.ativo ? `button onclick="AP.go('concursos')"` : 'div aria-disabled="true"'} class="product ${p.ativo ? 'is-on' : 'is-off'}">
+    <${p.ativo ? `button onclick="AP.go('${p.id}')"` : 'div aria-disabled="true"'} class="product ${p.ativo ? 'is-on' : 'is-off'}">
       <span class="product-robo" aria-hidden="true">${mascot(p.ativo ? 132 : 92, p.robo, { decorative: true, enter: false })}</span>
       <span class="product-ico">${p.ico}</span>
       <span class="product-name">Aprova<b>ê</b><i>+</i><wbr>${p.nome}</span>
@@ -227,20 +243,21 @@ function renderLanding() {
   </div>`;
 }
 
-/* ---------- LISTA DE CONCURSOS ---------- */
-function renderConcursos() {
-  document.title = 'Aprovaê+Concursos';
+/* ---------- LISTA (concursos, edições do Encceja...) ---------- */
+function renderLista(pid) {
+  const prod = PRODUCTS.find(p => p.id === pid);
+  document.title = 'Aprovaê+' + prod.nome;
   document.body.className = 'page-landing';
-  const list = Object.values(CONCURSOS).map(c => {
+  const list = Object.values(CONCURSOS).filter(c => (c.produto || 'concursos') === pid).map(c => {
     const saved = store.get(keyOf(c.id));
     const started = saved && saved.onb;
     const d = daysTo(c.prova);
     return `<article class="contest">
-      <div class="contest-robo">${mascot(110, c.mascot || 'notebook', { decorative: true, enter: false })}</div>
-      <div class="contest-top"><span class="tag tag-navy">${c.banca}</span><span class="tag tag-gold">${plural(c.vagas, 'vaga', 'vagas')}</span>${d ? `<span class="tag tag-red">faltam ${d} dias</span>` : ''}</div>
+      <div class="contest-robo">${mascot(110, c.mascot || 'notebook', { decorative: true })}</div>
+      <div class="contest-top"><span class="tag tag-navy">${c.banca}</span>${c.vagas ? `<span class="tag tag-gold">${plural(c.vagas, 'vaga', 'vagas')}</span>` : ''}${d ? `<span class="tag tag-red">faltam ${d} dias</span>` : ''}</div>
       <h2>${c.nome}</h2>
       <p class="contest-sub">${c.cargoGrupo}</p>
-      <ul class="contest-meta"><li>📄 ${c.edital}</li><li>📅 Prova em ${fmtDate(c.prova)}</li><li>💰 ${c.salario}</li></ul>
+      <ul class="contest-meta"><li>📄 ${c.edital}</li><li>📅 ${c.prova ? 'Prova em ' + fmtDate(c.prova) : 'Prova: ' + (c.provaTexto || 'data a definir')}</li>${c.salario ? `<li>💰 ${c.salario}</li>` : ''}</ul>
       ${started ? `<div class="contest-prog"><span>Seu progresso: ${saved.xp || 0} XP • ${Object.keys(saved.done || {}).length} fases</span></div>` : ''}
       <button class="btn btn-green" onclick="AP.go('${c.id}')">${started ? 'Continuar estudando' : 'Começar a estudar'}</button>
     </article>`;
@@ -251,9 +268,9 @@ function renderConcursos() {
       <a href="#inicio" class="back-link" aria-label="Voltar para o início">‹</a>
       <a href="#inicio"><img src="assets/img/logo-aprovae.webp?v=2" alt="Aprovaê" class="sub-logo" width="180" height="54"></a>
     </header>
-    <div class="sub-title"><h1>${wordmark('Concursos')}</h1><p>Escolha o concurso que você vai prestar.</p></div>
+    <div class="sub-title"><h1>${wordmark(prod.nome)}</h1><p>${prod.listaSub}</p></div>
     <section class="contests">${list}
-      <div class="contest contest-soon">${mascot(84, 'planejamento')}<div><b>Novos concursos em breve</b><p>Estamos preparando as próximas trilhas a partir dos editais publicados.</p></div></div>
+      <div class="contest contest-soon">${mascot(84, 'planejamento')}<div><b>${prod.listaBreve[0]}</b><p>${prod.listaBreve[1]}</p></div></div>
     </section>
   </div>`;
 }
@@ -267,8 +284,8 @@ function renderOnb() {
     body = `<div class="onb-center fade">
       ${mascot(180, 'principal', { eager: true })}
       <h1>Oi! Eu sou o <span class="c-gold">Lumi</span>.</h1>
-      <p>Vou acender as ideias certas até a sua aprovação no concurso de <b>${K.nome}</b>. Primeiro você aprende, depois pratica.</p>
-      <div class="onb-feats"><div><span>📖</span>Lição curta</div><div><span>🎯</span>Quiz da banca</div><div><span>🃏</span>Flashcards</div></div>
+      <p>Vou acender as ideias certas até a sua aprovação em <b>${K.nome}</b>. Primeiro você aprende, depois pratica.</p>
+      <div class="onb-feats"><div><span>📖</span>${K.aulaLabel ? 'Aula curta' : 'Lição curta'}</div><div><span>🎯</span>Quiz da banca</div><div><span>🃏</span>Flashcards</div></div>
     </div>`;
     btn = `<button class="btn btn-green" onclick="AP.onb(1)">Começar</button>`;
   } else if (s === 1) {
@@ -276,15 +293,15 @@ function renderOnb() {
       <span class="opt-emoji">${c.emoji}</span><span class="opt-main"><b>${c.nome}</b><small>${c.desc}</small></span><span class="opt-side">${c.vagas} vagas</span></button>`).join('');
     body = `<div class="onb-pad fade">
       <div class="lumi-say">${mascot(84, 'notebook')}${speech('Para qual cargo você vai fazer a prova?')}</div>
-      <div class="info-pill">🏛️ <span><small>CONCURSO</small><b>${K.nome} • ${K.edital}</b></span></div>
+      <div class="info-pill">🏛️ <span><small>${productOf(K).rotulo || 'CONCURSO'}</small><b>${K.nome} • ${K.edital}</b></span></div>
       <div class="stack">${opts}</div>
-      <p class="muted small">Português e Legislação são iguais para os dois cargos. Muda o bloco de Específicos.</p>
+      ${K.onbNota ? `<p class="muted small">${K.onbNota}</p>` : ''}
     </div>`;
     btn = `<button class="btn btn-green" ${S.cargo ? '' : 'disabled'} onclick="AP.onb(2)">Continuar</button>`;
   } else {
     const g = (v, t, d) => `<button onclick="AP.setGoal(${v})" class="opt big ${S.goal === v ? 'sel' : ''}"><span class="opt-main"><b>${t}</b><small>${d}</small></span><span class="opt-side">${v} XP/dia</span></button>`;
     body = `<div class="onb-pad fade">
-      <div class="lumi-say">${mascot(84, 'planejamento')}${speech(`Faltam <b class="c-red">${daysTo(K.prova)} dias</b> para a prova. Qual vai ser seu ritmo?`)}</div>
+      <div class="lumi-say">${mascot(84, 'planejamento')}${speech(K.prova ? `Faltam <b class="c-red">${daysTo(K.prova)} dias</b> para a prova. Qual vai ser seu ritmo?` : 'Qual vai ser o seu ritmo de estudo?')}</div>
       <div class="stack">${g(30, 'Leve', '≈ 1 fase por dia')}${g(50, 'Firme', '≈ 2 fases por dia')}${g(100, 'Intenso', '≈ 4 fases por dia')}</div>
       <div class="note">💡 No ritmo <b>Firme</b>, você termina a trilha com folga e usa o resto do tempo para revisar seus erros.</div>
     </div>`;
@@ -292,8 +309,8 @@ function renderOnb() {
   }
   $app.innerHTML = `<div class="focus">
     <div class="focus-top"><div class="focus-top-in">
-      ${s > 0 ? `<button class="x-btn" onclick="AP.onb(${s - 1})" aria-label="Voltar">‹</button>` : `<button class="x-btn" onclick="AP.go('concursos')" aria-label="Voltar">‹</button>`}
-      <div class="bar"><i style="width:${(s + 1) / 3 * 100}%"></i></div>
+      ${s > 0 ? `<button class="x-btn" onclick="AP.onb(${s - 1})" aria-label="Voltar">‹</button>` : `<button class="x-btn" onclick="AP.go('${productOf(K).id}')" aria-label="Voltar">‹</button>`}
+      <div class="bar"><i style="width:${singleCargo() ? (s === 0 ? 50 : 100) : (s + 1) / 3 * 100}%"></i></div>
     </div></div>
     <div class="focus-body">${body}</div>
     <div class="focus-foot"><div class="focus-foot-in"><span class="foot-spacer"></span>${btn}</div></div>
@@ -320,10 +337,10 @@ function renderShell() {
     <aside class="side">
       <a href="#inicio" class="side-logo"><img src="assets/img/logo-aprovae.webp?v=2" alt="Aprovaê" width="190" height="57"></a>
       <nav class="side-nav">${NAV.map(navItem('side-item')).join('')}
-        <button class="side-item ${UI.tab === 'edital' ? 'on' : ''}" onclick="AP.tab('edital')"><span class="nav-ico">📋</span><span>Edital</span></button></nav>
+        <button class="side-item ${UI.tab === 'edital' ? 'on' : ''}" onclick="AP.tab('edital')"><span class="nav-ico">📋</span><span>${guiaNome()}</span></button></nav>
       <div class="side-foot">
-        <div class="side-contest"><small>SEU CONCURSO</small><b>${K.nome}</b><span>${cargo().emoji} ${cargo().curto}</span></div>
-        <a href="#concursos" class="side-link">Trocar de concurso</a>
+        <div class="side-contest"><small>SEU ${productOf(K).rotulo || 'CONCURSO'}</small><b>${K.nome}</b><span>${cargo().emoji} ${cargo().curto}</span></div>
+        <a href="#${productOf(K).id}" class="side-link">Trocar de ${(productOf(K).rotulo || 'CONCURSO').toLowerCase()}</a>
       </div>
     </aside>
     <div class="col-main">
@@ -344,12 +361,19 @@ function renderShell() {
   }
 }
 function railWidgets() {
-  const d = daysTo(K.prova); const p = projection();
+  const p = projection();
   const an = allNodes(); const tp = an.filter(n => isDone(n.id)).length / an.length * 100;
   const pct = Math.min(100, dayXP() / S.goal * 100);
+  const nota = p.mode === 'areas'
+    ? `<div class="row-between"><b>Áreas no alvo</b><span class="${p.hit ? 'c-green' : 'c-faint'}"><b>${p.hit} / ${p.rows.length}</b></span></div>
+       <div class="area-dots">${p.rows.map(r => `<span title="${r.a.nome}" style="--c:${r.a.cor}" class="${r.acc !== null && r.acc >= p.meta ? 'on' : ''}">${r.a.curto}</span>`).join('')}</div>
+       <p class="muted small">Alvo de treino: ${Math.round(p.meta * 100)}% de acertos em cada área.</p>`
+    : `<div class="row-between"><b>Nota projetada</b><span class="${p.proj === null ? 'c-faint' : p.pass ? 'c-green' : 'c-orange'}"><b>${p.proj === null ? '—' : p.proj} / ${K.total}</b></span></div>
+       <div class="bar-cut"><div class="bar ${p.pass ? '' : 'gold'}"><i style="width:${p.proj === null ? 0 : p.proj / K.total * 100}%"></i></div><span class="cut" style="left:${K.corte / K.total * 100}%"></span></div>
+       <p class="muted small">Corte do edital: ${K.corte} pontos.</p>`;
   return `<div class="rail-stats">${statChips()}</div>
     <div class="card">
-      <div class="countdown"><div class="cd-num"><b>${d}</b><small>DIAS</small></div><div><b>Prova em ${fmtDate(K.prova)}</b><p class="muted small">${cargo().curto} • turno da ${cargo().turno}</p></div></div>
+      <div class="countdown">${cdNum()}<div><b>${provaTxt()}</b><p class="muted small">${turnoTxt()}</p></div></div>
       <div class="bar-row"><div class="bar thin"><i style="width:${tp}%"></i></div><small>${Math.round(tp)}% da trilha</small></div>
     </div>
     <div class="card">
@@ -357,13 +381,10 @@ function railWidgets() {
       <div class="bar gold"><i style="width:${pct}%"></i></div>
       <p class="muted small">${pct >= 100 ? 'Meta batida! Sequência garantida 🔥' : 'Complete fases para manter sua sequência.'}</p>
     </div>
-    <div class="card">
-      <div class="row-between"><b>Nota projetada</b><span class="${p.proj === null ? 'c-faint' : p.pass ? 'c-green' : 'c-orange'}"><b>${p.proj === null ? '—' : p.proj} / ${K.total}</b></span></div>
-      <div class="bar-cut"><div class="bar ${p.pass ? '' : 'gold'}"><i style="width:${p.proj === null ? 0 : p.proj / K.total * 100}%"></i></div><span class="cut" style="left:${K.corte / K.total * 100}%"></span></div>
-      <p class="muted small">Corte do edital: ${K.corte} pontos.</p>
+    <div class="card">${nota}
       <button class="link-btn" onclick="AP.tab('prog')">Ver meu desenvolvimento ›</button>
     </div>
-    <div class="card lumi-card">${mascot(70, 'atencao', { decorative: true })}<p><b>Dica do Lumi:</b> Específicos valem 2/3 da prova. Cada acerto ali vale o triplo de um acerto de Legislação.</p></div>`;
+    <div class="card lumi-card">${mascot(70, 'atencao', { decorative: true })}<p>${K.dica || ''}</p></div>`;
 }
 
 /* ---------- TRILHA ---------- */
@@ -377,7 +398,7 @@ function welcomeCard() {
   } else if (UI.away !== null && UI.away >= 2) {
     pose = 'atencao'; cls = 'motivate';
     title = `Que bom te ver de volta! 💛`;
-    text = `Faz ${UI.away} dias que você não estuda${S.streak > 1 ? ' e sua sequência zerou' : ''}. Faltam <b>${d} dias</b> para a prova: uma fase de 5 minutos já te coloca de volta no ritmo.`;
+    text = `Faz ${UI.away} dias que você não estuda${S.streak > 1 ? ' e sua sequência zerou' : ''}. ${d !== null ? `Faltam <b>${d} dias</b> para a prova: u` : 'U'}ma fase de 5 minutos já te coloca de volta no ritmo.`;
   } else {
     title = 'Bem-vindo(a) de volta!';
     text = streakNow() ? `Sua sequência está em <b>🔥 ${plural(streakNow(), 'dia', 'dias')}</b>. Meta de hoje: <b>${meta}</b>. Bora continuar?` : `Meta de hoje: <b>${meta}</b>. Uma fase por dia já faz diferença!`;
@@ -413,7 +434,7 @@ function viewHome() {
     return `<section class="unit">
       <div class="unit-banner" style="--c:${u.c};--cd:${u.cd}">
         <div class="unit-robo">${mascot(104, unitRobo(u), { decorative: true, enter: false })}</div>
-        <small>UNIDADE ${ui + 1} • ${a.curto.toUpperCase()} • ${a.pts} PT${a.pts > 1 ? 'S' : ''} POR QUESTÃO</small>
+        <small>UNIDADE ${ui + 1} • ${a.curto.toUpperCase()} • ${a.pts ? `${a.pts} PT${a.pts > 1 ? 'S' : ''} POR QUESTÃO` : u.area === 'red' ? 'NOTA DE 0 A 10' : `${a.q} QUESTÕES NA PROVA`}</small>
         <h2>${u.title}</h2>
         <p>${u.sub}</p>
         <div class="unit-prog"><div class="bar white"><i style="width:${doneU / nodes.length * 100}%"></i></div><b>${doneU}/${nodes.length}</b></div>
@@ -424,12 +445,12 @@ function viewHome() {
   return `<div class="fade page">
     ${welcomeCard()}
     <div class="trail-head">
-      <div><small class="eyebrow">APROVAÊ+CONCURSOS</small><h1>${K.nome}</h1><p class="muted">${cargo().nome}</p></div>
-      <button class="chip" onclick="AP.tab('edital')">📋 Edital</button>
+      <div><small class="eyebrow">APROVAÊ+${productOf(K).nome.toUpperCase()}</small><h1>${K.nome}</h1><p class="muted">${cargo().nome}</p></div>
+      <button class="chip" onclick="AP.tab('edital')">📋 ${guiaNome()}</button>
     </div>
     <div class="card countdown-card">
-      <div class="countdown"><div class="cd-num"><b>${d}</b><small>DIAS</small></div>
-      <div class="grow"><b>Prova em ${fmtDate(K.prova)}</b><p class="muted small">Turno da ${cargo().turno}</p>
+      <div class="countdown">${cdNum()}
+      <div class="grow"><b>${provaTxt()}</b><p class="muted small">${turnoTxt()}</p>
       <div class="bar-row"><div class="bar thin"><i style="width:${doneN / all.length * 100}%"></i></div><small>${Math.round(doneN / all.length * 100)}% da trilha</small></div></div></div>
     </div>
     ${units}
@@ -443,15 +464,15 @@ function renderSheet() {
   let title, info, btns = '';
   if (n.boss) {
     title = `🏆 Desafio: ${u.title}`;
-    info = 'Até 10 questões sorteadas de toda a unidade, sem lição antes. Mostre que domina o bloco!';
+    info = 'Até 10 questões sorteadas de toda a unidade, sem aula antes. Mostre que domina o bloco!';
     if (unlocked) btns = `<button class="btn btn-gold" onclick="AP.boss('${u.id}')">${done ? 'Desafiar de novo' : 'Aceitar desafio'}</button>`;
   } else {
     const f = n.f;
     title = f.title;
-    info = `<b>${f.topic}</b><br>📖 ${f.lesson.length} cartões de lição • 🎯 ${f.quiz.length} questões`;
+    info = `<b>${f.topic}</b><br>📖 ${f.lesson.length} ${LX().cards} • 🎯 ${f.quiz.length} questões`;
     if (unlocked) btns = done
-      ? `<button class="btn btn-green" onclick="AP.lesson('${f.id}')">Rever lição e praticar</button><button class="btn btn-ghost" onclick="AP.faseQuiz('${f.id}')">Só o quiz</button>`
-      : `<button class="btn btn-green" onclick="AP.lesson('${f.id}')">Começar lição · +${10 * f.quiz.length + 10} XP</button>`;
+      ? `<button class="btn btn-green" onclick="AP.lesson('${f.id}')">Rever ${LX().n} e praticar</button><button class="btn btn-ghost" onclick="AP.faseQuiz('${f.id}')">Só o quiz</button>`
+      : `<button class="btn btn-green" onclick="AP.lesson('${f.id}')">Começar ${LX().n} · +${10 * f.quiz.length + 10} XP</button>`;
   }
   const lock = unlocked ? '' : `<div class="locked-msg">🔒 Complete ${n.boss ? 'todas as fases desta unidade' : 'a fase anterior'} para liberar. Ou estude este assunto agora pela aba <b>Tópicos</b>.</div>`;
   $layer.innerHTML = `<div class="overlay" onclick="AP.closeSheet()"></div>
@@ -465,6 +486,12 @@ function renderSheet() {
 }
 
 /* ---------- LIÇÃO ---------- */
+function draftMeta(t) {
+  const words = (t.trim().match(/\S+/g) || []).length;
+  const lines = t.trim() ? Math.max(t.split('\n').length, Math.ceil(t.length / 62)) : 0;
+  const ok = lines >= 20 && lines <= 30;
+  return `<span>${plural(words, 'palavra', 'palavras')}</span><span class="${ok ? 'c-green' : lines > 30 ? 'c-red' : ''}">≈ ${lines} linhas manuscritas ${ok ? '✓' : '(meta: 20 a 30)'}</span>`;
+}
 function renderLesson() {
   document.body.className = 'page-focus';
   const L = UI.lesson; const { f, u } = FASES[L.fid];
@@ -486,6 +513,18 @@ function renderLesson() {
   } else if (card.t === 'compare') {
     const col = (h, items, cls) => `<div class="cmp ${cls}"><b>${h}</b><ul>${items.map(it => `<li>${it}</li>`).join('')}</ul></div>`;
     inner = `<div class="pop"><small class="eyebrow">COMPARE</small><h2 class="lesson-title">${card.title}</h2><div class="cmp-grid">${col(card.lh, card.li, 'cmp-a')}${col(card.rh, card.ri, 'cmp-b')}</div></div>`;
+  } else if (card.t === 'write') {
+    const key = L.fid + ':' + L.i; const txt = S.drafts[key] || ''; const chk = S.drafts[key + ':chk'] || [];
+    inner = `<div class="pop write">
+      <div class="lumi-say">${mascot(88, 'notebook')}${speech('Hora de praticar! Escreva aqui ou no papel, e use o checklist.')}</div>
+      <div class="write-tema"><small>PROPOSTA DE TREINO</small><b>${card.tema}</b><p>${card.apoio}</p></div>
+      <textarea id="draft" class="draft" rows="14" placeholder="Comece pelo rascunho: tese, argumento 1, argumento 2 e intervenção…" oninput="AP.draft('${key}', this.value)">${txt.replace(/</g, '&lt;')}</textarea>
+      <div class="draft-meta" id="draftMeta">${draftMeta(txt)}</div>
+      <div class="write-chk"><small class="eyebrow">CHECKLIST DE REVISÃO</small>
+        ${card.checklist.map((c, i) => `<label class="chk"><input type="checkbox" ${chk[i] ? 'checked' : ''} onchange="AP.draftChk('${key}', ${i}, this.checked)"><span>${c}</span></label>`).join('')}
+      </div>
+      <p class="muted small">Dica: o texto fica salvo só neste aparelho. Mostre a um professor ou colega para receber um retorno.</p>
+    </div>`;
   } else if (card.t === 'check') {
     canGo = L.ans !== null;
     const ok = L.ans === card.answer;
@@ -504,7 +543,7 @@ function renderLesson() {
       <div class="bar"><i style="width:${(L.i + (isReady ? 1 : 0)) / total * 100}%;background:${u.c}"></i></div>
       <span class="counter">📖 ${Math.min(L.i + 1, cards.length)}/${cards.length}</span>
     </div></div>
-    <div class="focus-body"><small class="eyebrow" style="color:${u.cd}">LIÇÃO • ${f.title.toUpperCase()}</small>${inner}</div>
+    <div class="focus-body"><small class="eyebrow" style="color:${u.cd}">${K.aulaLabel || 'LIÇÃO'} • ${f.title.toUpperCase()}</small>${inner}</div>
     <div class="focus-foot"><div class="focus-foot-in">
       ${L.i > 0 && !isReady ? `<button class="btn btn-ghost btn-back" onclick="AP.lessonBack()" aria-label="Voltar">‹</button>` : '<span class="foot-spacer"></span>'}
       <button class="btn ${isReady ? 'btn-green' : 'btn-navy'}" ${canGo ? '' : 'disabled'} onclick="AP.lessonNext()">${isReady ? 'Começar quiz' : 'Continuar'}</button>
@@ -550,7 +589,7 @@ function renderQuiz() {
     <div class="focus-body ${z.checked && !z.lastOk ? 'shake' : ''}">
       <div class="q-tags">
         <small class="eyebrow" style="color:${u.cd}">${modeLabel}</small>
-        <span class="tag" style="color:${u.cd};border-color:${u.c}55">${area.curto} • ${area.pts} pt${area.pts > 1 ? 's' : ''}</span>
+        <span class="tag" style="color:${u.cd};border-color:${u.c}55">${area.curto}${area.pts ? ` • ${area.pts} pt${area.pts > 1 ? 's' : ''}` : ''}</span>
         ${it.retry ? '<span class="tag tag-gold">🔁 SEGUNDA CHANCE</span>' : ''}
         ${z.combo >= 2 && !z.checked ? `<span class="tag tag-orange pop">🔥 ${z.combo} seguidas</span>` : ''}
       </div>
@@ -592,10 +631,10 @@ function renderFail() {
     <div class="focus-body center">
       ${mascot(150, 'duvida')}
       <h1>Suas vidas acabaram</h1>
-      <p class="muted">Tudo bem! Cada erro foi salvo no <b>Caderno de Erros</b>. Rever a lição antes de tentar de novo costuma resolver.</p>
+      <p class="muted">Tudo bem! Cada erro foi salvo no <b>Caderno de Erros</b>. Rever a ${LX().n} antes de tentar de novo costuma resolver.</p>
     </div>
     <div class="focus-foot"><div class="focus-foot-in">
-      ${z.mode === 'fase' ? `<button class="btn btn-ghost" onclick="AP.lesson('${z.fid}', true)">Rever a lição</button>` : '<span class="foot-spacer"></span>'}
+      ${z.mode === 'fase' ? `<button class="btn btn-ghost" onclick="AP.lesson('${z.fid}', true)">Rever a ${LX().n}</button>` : '<span class="foot-spacer"></span>'}
       <button class="btn btn-navy" onclick="${z.mode === 'fase' ? `AP.faseQuiz('${z.fid}', true)` : z.mode === 'boss' ? `AP.boss('${z.unitId}', true)` : 'AP.home()'}">${z.mode === 'review' || z.mode === 'drill' ? 'Voltar' : 'Tentar de novo'}</button>
     </div></div>
   </div>`;
@@ -615,7 +654,7 @@ function viewTopics() {
           <span class="topic-st ${d ? 'c-gold' : 'c-faint'}">${d ? '★'.repeat(d.stars) : 'NOVO'}</span>
         </div>
         <div class="topic-actions">
-          <button class="chip" onclick="AP.lesson('${fa.id}', 'topics')">📖 Lição</button>
+          <button class="chip" onclick="AP.lesson('${fa.id}', 'topics')">📖 ${LX().N}</button>
           <button class="chip" onclick="AP.faseQuiz('${fa.id}', 'topics')">🎯 Quiz</button>
           <button class="chip" onclick="AP.cardsOf('${fa.id}')">🃏 ${nCards} cards</button>
         </div></div>`;
@@ -692,60 +731,75 @@ function viewReview() {
 }
 
 /* ---------- SEU DESENVOLVIMENTO ---------- */
+function notaCard() {
+  const p = projection();
+  if (p.mode === 'areas') {
+    return `<div class="card">
+      <small class="eyebrow">DESEMPENHO POR ÁREA</small>
+      <div class="proj"><b class="${p.hit ? 'c-green' : 'c-faint'}">${p.hit}</b><span>/ ${p.rows.length} áreas no alvo de ${Math.round(p.meta * 100)}%</span></div>
+      <div class="stack">${p.rows.map(r => `<div class="area-row">
+        <div class="row-between"><b>${r.a.nome}</b><b style="color:${r.a.cor}">${r.acc === null ? '—' : Math.round(r.acc * 100) + '%'}</b></div>
+        <small class="muted">${r.s.r}/${r.s.t} acertos na primeira tentativa</small>
+        <div class="bar-cut"><div class="bar thin"><i style="width:${r.acc === null ? 0 : r.acc * 100}%;background:${r.a.cor}"></i></div><span class="cut" style="left:${p.meta * 100}%"></span></div></div>`).join('')}</div>
+      <div class="note">📌 ${K.notaInfo || ''}</div>
+    </div>`;
+  }
+  const { rows, proj, pass } = p; const ready = proj !== null;
+  return `<div class="card">
+      <small class="eyebrow">NOTA PROJETADA NA PROVA</small>
+      <div class="proj"><b class="${!ready ? 'c-faint' : pass ? 'c-green' : 'c-orange'}">${ready ? proj : '—'}</b><span>/ ${K.total} pts</span>
+        ${ready ? `<span class="tag ${pass ? 'tag-green' : 'tag-gold'}">${pass ? 'APROVAÇÃO' : 'ABAIXO DO CORTE'}</span>` : ''}</div>
+      <div class="bar-cut"><div class="bar ${pass ? '' : 'gold'}"><i style="width:${ready ? proj / K.total * 100 : 0}%"></i></div><span class="cut" style="left:${K.corte / K.total * 100}%"><em>corte ${K.corte}</em></span></div>
+      <p class="muted small">${ready ? 'Calculada com a sua taxa de acerto na primeira tentativa, aplicada ao peso de cada bloco.' : `Responda questões dos ${rows.length} blocos para ver a projeção.`}</p>
+      <div class="stack">${rows.map(r => `<div class="area-row">
+        <div class="row-between"><b>${r.a.nome}</b><b style="color:${r.a.cor}">${r.acc === null ? '—' : Math.round(r.acc * 100) + '%'}</b></div>
+        <small class="muted">${r.a.q} questões × ${r.a.pts} pt = ${r.a.max} pts • projeção: ${r.proj === null ? '—' : r.proj.toFixed(1)} pts • ${r.s.r}/${r.s.t} acertos</small>
+        <div class="bar thin"><i style="width:${r.acc === null ? 0 : r.acc * 100}%;background:${r.a.cor}"></i></div></div>`).join('')}</div>
+      ${K.notaInfo ? `<div class="note">📌 ${K.notaInfo}</div>` : ''}
+    </div>`;
+}
 function viewProgress() {
-  const { rows, proj, pass } = projection();
-  const ready = proj !== null;
   const all = allNodes(); const doneN = all.filter(n => isDone(n.id)).length;
   const stat = (ico, v, l) => `<div class="stat-tile"><span>${ico}</span><div><b>${v}</b><small>${l}</small></div></div>`;
   const unitsProg = K.units.map(u => { const n = nodesOf(u); const d = n.filter(x => isDone(x.id)).length; return `<div class="u-prog"><span class="u-dot" style="background:${u.c}"></span><b>${u.title}</b><div class="bar thin"><i style="width:${d / n.length * 100}%;background:${u.c}"></i></div><small>${d}/${n.length}</small></div>`; }).join('');
   return `<div class="page fade narrow">
     <div class="page-title"><h1>Seu desenvolvimento até agora</h1><p class="muted">Tudo o que você já conquistou na trilha, nos tópicos e nos flashcards.</p></div>
     <div class="stat-grid">${stat('🔥', streakNow(), 'dias seguidos')}${stat('⚡', S.xp, 'XP • nível ' + level())}${stat('★', totalStars(), 'estrelas')}${stat('🗺️', doneN + '/' + all.length, 'fases concluídas')}${stat('🃏', fcKnown() + '/' + visibleCards().length, 'flashcards dominados')}${stat('🧠', Object.keys(S.errors).length, 'erros para revisar')}</div>
-    <div class="card">
-      <small class="eyebrow">NOTA PROJETADA NA PROVA</small>
-      <div class="proj"><b class="${!ready ? 'c-faint' : pass ? 'c-green' : 'c-orange'}">${ready ? proj : '—'}</b><span>/ ${K.total} pts</span>
-        ${ready ? `<span class="tag ${pass ? 'tag-green' : 'tag-gold'}">${pass ? 'APROVAÇÃO' : 'ABAIXO DO CORTE'}</span>` : ''}</div>
-      <div class="bar-cut"><div class="bar ${pass ? '' : 'gold'}"><i style="width:${ready ? proj / K.total * 100 : 0}%"></i></div><span class="cut" style="left:${K.corte / K.total * 100}%"><em>corte ${K.corte}</em></span></div>
-      <p class="muted small">${ready ? 'Calculada com a sua taxa de acerto na primeira tentativa, aplicada ao peso de cada bloco.' : 'Responda questões dos 3 blocos para ver a projeção.'}</p>
-      <div class="stack">${rows.map(r => `<div class="area-row">
-        <div class="row-between"><b>${r.a.nome}</b><b style="color:${r.a.cor}">${r.acc === null ? '—' : Math.round(r.acc * 100) + '%'}</b></div>
-        <small class="muted">${r.a.q} questões × ${r.a.pts} pt = ${r.a.max} pts • projeção: ${r.proj === null ? '—' : r.proj.toFixed(1)} pts • ${r.s.r}/${r.s.t} acertos</small>
-        <div class="bar thin"><i style="width:${r.acc === null ? 0 : r.acc * 100}%;background:${r.a.cor}"></i></div></div>`).join('')}</div>
-      <div class="note">📌 Para passar: <b>${K.corte} de ${K.total} pontos</b> e <b>nenhuma disciplina zerada</b>. Exemplo: 14 acertos em Específicos (42 pts) + 6 em Português (12 pts) = 54.</div>
-    </div>
+    ${notaCard()}
     <div class="card"><small class="eyebrow">MEDALHAS • ${Object.keys(S.medals).length}/${K.units.length}</small>
       <div class="medals">${K.units.map(u => { const got = !!S.medals[u.id]; return `<div class="medal-item ${got ? '' : 'off'}">${medalHtml({ c: u.c, cd: u.cd, emoji: u.emoji, locked: !got })}<b>${u.title}</b><small>${got ? 'Conquistada' : 'Vença o desafio da unidade'}</small></div>`; }).join('')}</div></div>
     <div class="card"><small class="eyebrow">TRILHA POR UNIDADE</small><div class="stack">${unitsProg}</div></div>
     <div class="card settings">
       <small class="eyebrow">AJUSTES</small>
-      <div><b>Cargo</b><div class="seg">${Object.entries(K.cargos).map(([id, c]) => `<button class="opt ${S.cargo === id ? 'sel' : ''}" onclick="AP.setCargo('${id}', true)">${c.emoji} ${c.curto}</button>`).join('')}</div></div>
+      ${singleCargo() ? '' : `<div><b>Cargo</b><div class="seg">${Object.entries(K.cargos).map(([id, c]) => `<button class="opt ${S.cargo === id ? 'sel' : ''}" onclick="AP.setCargo('${id}', true)">${c.emoji} ${c.curto}</button>`).join('')}</div></div>`}
       <div><b>Meta diária</b><div class="seg">${[30, 50, 100].map(g => `<button class="opt ${S.goal === g ? 'sel' : ''}" onclick="AP.setGoal(${g}, true)">${g} XP</button>`).join('')}</div></div>
       <div class="row-between"><b>Sons</b><button class="toggle ${S.sound ? 'on' : ''}" onclick="AP.toggleSound()" aria-label="Sons" aria-pressed="${S.sound}"></button></div>
-      <button class="danger-link" onclick="AP.confirmReset()">Zerar todo o progresso deste concurso</button>
+      <button class="danger-link" onclick="AP.confirmReset()">Zerar todo o progresso de ${K.nome}</button>
     </div>
   </div>`;
 }
 
-/* ---------- EDITAL ---------- */
+/* ---------- EDITAL / GUIA DA PROVA ---------- */
 function viewEdital() {
-  const row = (l, v) => `<div class="kv"><span>${l}</span><b>${v}</b></div>`;
-  const cg = K.cargos;
+  const g = K.guia || {};
+  const row = ([l, v]) => `<div class="kv"><span>${l}</span><b>${v}</b></div>`;
+  const destaques = (g.destaques || []).map((d, i) => `<div class="hero-card ${i ? 'blue' : 'navy'}"><small>${d.rotulo}</small><h2>${d.valor}</h2><p>${d.texto}</p></div>`).join('');
+  const areas = Object.values(K.areas).map(a => `<div class="area-line"><span style="background:${a.cor}"></span><div class="grow"><b>${a.nome}</b><small class="muted">${a.pts ? `${a.q} questões × ${a.pts} pt` : a.q > 1 ? `${a.q} questões` : 'texto dissertativo-argumentativo'}</small></div><b style="color:${a.cor}">${a.max != null ? a.max : a.q > 1 ? a.q : '0–10'}</b></div>`).join('');
   return `<div class="page fade narrow">
     <button class="link-btn" onclick="AP.tab('home')">‹ Voltar para a trilha</button>
-    <div class="page-title with-robo"><div><h1>Edital em 1 minuto</h1><p class="muted">${K.edital} • ${K.nome} • Banca ${K.banca}</p></div>${mascot(104, 'legislacao', { decorative: true })}</div>
-    <div class="two">${Object.values(cg).map((c, i) => `<div class="hero-card ${i ? 'blue' : 'navy'}"><small>${c.curto}</small><h2>${c.vagas}</h2><p>vagas • ${c.nome}</p></div>`).join('')}</div>
-    <div class="card"><small class="eyebrow">CARGO</small>${row('Salário', K.salario)}${row('Jornada', '40h semanais')}${row('Escolaridade', 'Ensino médio completo')}${row('ACS', 'Morar na área desde o edital')}</div>
-    <div class="card"><small class="eyebrow">DATAS</small>${row('Inscrições', '17/11 a 22/12/2026')}${row('Taxa', 'R$ 94,00 (boleto até 23/12, 21h)')}${row('Prova objetiva', fmtDate(K.prova) + ' • 3 horas')}${row('ACS', 'Manhã: portão 8h, início 9h10')}${row('ACE', 'Tarde: portão 14h, início 15h10')}${row('Gabarito preliminar', '01/02/2027')}</div>
-    <div class="card"><small class="eyebrow">ESTRUTURA DA PROVA • 40 QUESTÕES • 4 ALTERNATIVAS</small>
-      <div class="stack">${Object.values(K.areas).map(a => `<div class="area-line"><span style="background:${a.cor}"></span><div class="grow"><b>${a.nome}</b><small class="muted">${a.q} questões × ${a.pts} pt</small></div><b style="color:${a.cor}">${a.max}</b></div>`).join('')}
-      <div class="row-between total"><b>Total</b><b>${K.total} pts</b></div></div>
-      <div class="note gold">Aprovação: mínimo de <b>${K.corte} pontos (60%)</b> e nenhuma disciplina zerada.</div></div>
-    <div class="card"><small class="eyebrow">ETAPAS</small>${row('1. Prova objetiva', 'Eliminatória e classificatória')}${row('2. Títulos', 'Classificatória • até 8 pts')}${row('3. Curso de Formação Inicial', 'Eliminatório')}</div>
-    <a class="btn btn-ghost" href="${K.editalUrl}" target="_blank" rel="noopener">📄 Abrir edital completo</a>
+    <div class="page-title with-robo"><div><h1>${g.titulo || 'Edital em 1 minuto'}</h1><p class="muted">${g.sub || ''}</p></div>${mascot(104, 'legislacao', { decorative: true })}</div>
+    ${g.aviso ? `<div class="note gold">⚠️ ${g.aviso}</div>` : ''}
+    ${destaques ? `<div class="two">${destaques}</div>` : ''}
+    ${(g.cards || []).slice(0, 2).map(c => `<div class="card"><small class="eyebrow">${c.titulo}</small>${c.linhas.map(row).join('')}</div>`).join('')}
+    <div class="card"><small class="eyebrow">${g.estruturaTitulo || 'ESTRUTURA DA PROVA'}</small>
+      <div class="stack">${areas}${K.total ? `<div class="row-between total"><b>Total</b><b>${K.total} pts</b></div>` : ''}</div>
+      ${g.aprovacao ? `<div class="note gold">${g.aprovacao}</div>` : ''}</div>
+    ${(g.cards || []).slice(2).map(c => `<div class="card"><small class="eyebrow">${c.titulo}</small>${c.linhas.map(row).join('')}</div>`).join('')}
+    <a class="btn btn-ghost" href="${K.editalUrl}" target="_blank" rel="noopener">📄 ${g.linkTexto || 'Abrir edital completo'}</a>
     ${(K.documentos || []).length ? `<div class="card"><small class="eyebrow">DOCUMENTOS OFICIAIS</small>
-      <div class="docs">${K.documentos.map(d => `<a class="doc" href="${d.url}" target="_blank" rel="noopener"><span class="doc-tipo ${d.tipo === 'PDF' ? 'pdf' : ''}">${d.tipo}</span><span class="doc-nome">${d.nome}</span><span class="doc-go" aria-hidden="true">↗</span></a>`).join('')}</div>
-      <p class="muted small">Os anexos (.doc) abrem no Word ou no Google Docs. Preencha, assine e envie conforme as instruções do edital.</p></div>` : ''}
-    <p class="muted small center-t">Inscrições em www.ibam-concursos.org.br</p>
+      <div class="docs">${K.documentos.map(d => `<a class="doc" href="${d.url}" target="_blank" rel="noopener"><span class="doc-tipo ${d.tipo === 'PDF' ? 'pdf' : d.tipo === 'SITE' ? 'site' : ''}">${d.tipo}</span><span class="doc-nome">${d.nome}</span><span class="doc-go" aria-hidden="true">↗</span></a>`).join('')}</div>
+      ${K.documentos.some(d => d.tipo === 'DOC') ? '<p class="muted small">Os anexos (.doc) abrem no Word ou no Google Docs. Preencha, assine e envie conforme as instruções do edital.</p>' : ''}</div>` : ''}
+    ${g.rodape ? `<p class="muted small center-t">${g.rodape}</p>` : ''}
   </div>`;
 }
 
@@ -784,7 +838,7 @@ const CHEER = [
 
 window.AP = {
   go,
-  onb(step) { UI.onbStep = step; render(); },
+  onb(step) { if (step === 1 && singleCargo()) step = UI.onbStep > 1 ? 0 : 2; UI.onbStep = step; render(); },
   setCargo(id, inApp) { S.cargo = id; if (inApp) save(); render(); },
   setGoal(v, inApp) { S.goal = v; if (inApp) save(); render(); },
   finishOnb() { S.onb = true; save(); UI.screen = 'tabs'; UI.tab = 'home'; UI.scrollToCurrent = true; render(); },
@@ -798,6 +852,11 @@ window.AP = {
       <p class="muted">O pagamento on-line está quase pronto. Assim que for liberado, você poderá assinar por aqui.</p>
       <div class="stack"><button class="btn btn-navy" onclick="AP.closeSheet()">Entendi</button></div></div>`;
   },
+  draft(key, v) {
+    S.drafts[key] = v; const m = document.getElementById('draftMeta'); if (m) m.innerHTML = draftMeta(v);
+    clearTimeout(UI._dt); UI._dt = setTimeout(save, 500);
+  },
+  draftChk(key, i, on) { const a = S.drafts[key + ':chk'] || []; a[i] = on; S.drafts[key + ':chk'] = a; save(); },
   closeWelcome() { UI.welcome = false; const el = document.querySelector('.welcome'); if (el) el.remove(); },
   tab(id) { UI.tab = id; UI.sheet = null; UI.screen = 'tabs'; render(); window.scrollTo(0, 0); },
   home() { UI.screen = 'tabs'; UI.tab = UI.backTab || 'home'; UI.lesson = null; UI.quiz = null; UI.backTab = null; UI.scrollToCurrent = UI.tab === 'home'; render(); if (UI.tab !== 'home') window.scrollTo(0, 0); },
@@ -886,12 +945,12 @@ window.AP = {
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && $layer.innerHTML) { AP.closeSheet(); return; }
-  if (!UI || !S || !S.onb || R === 'inicio' || R === 'concursos') return;
+  if (!UI || !S || !S.onb || R === 'inicio' || R.startsWith('list:')) return;
   if (UI.screen === 'quiz' && !$layer.innerHTML) {
     const z = UI.quiz;
     if (!z.checked && ['1', '2', '3', '4', 'a', 'b', 'c', 'd'].includes(e.key.toLowerCase())) { const i = '1234'.indexOf(e.key) >= 0 ? '1234'.indexOf(e.key) : 'abcd'.indexOf(e.key.toLowerCase()); AP.pick(i); }
     else if (e.key === 'Enter') { e.preventDefault(); z.checked ? AP.next() : AP.verify(); }
-  } else if (UI.screen === 'lesson' && e.key === 'Enter' && !$layer.innerHTML) {
+  } else if (UI.screen === 'lesson' && e.key === 'Enter' && !$layer.innerHTML && e.target.tagName !== 'TEXTAREA') {
     const L = UI.lesson; const c = FASES[L.fid].f.lesson[L.i];
     if (!c || c.t !== 'check' || L.ans !== null) { e.preventDefault(); AP.lessonNext(); }
   }

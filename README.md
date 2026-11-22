@@ -5,7 +5,8 @@ Trilhas de estudo no estilo "fases": cada fase começa com uma **lição curta**
 Produtos:
 
 - **Aprovaê+Concursos** (disponível): concurso da Prefeitura de Saquarema/RJ, PSP nº 001/2026 (IBAM), cargos ACS e ACE
-- **Aprovaê+ENEM**, **Aprovaê+ENCCEJA**, **Aprovaê+Faetec** e **Aprovaê+Graduação** (em breve)
+- **Aprovaê+ENCCEJA** (disponível): Encceja 2027, Ensino Médio, com 5 unidades (Linguagens, Matemática, Natureza, Humanas e Redação) e laboratório de redação
+- **Aprovaê+ENEM**, **Aprovaê+Faetec** e **Aprovaê+Graduação** (em breve)
 
 O site é **100% estático**: HTML, CSS e JavaScript puros, sem framework e sem etapa de build.
 
@@ -19,7 +20,8 @@ assets/
   css/app.css                     todos os estilos (mobile, tablet e desktop)
   js/app.js                       telas, navegação, quiz, flashcards, progresso
   js/map.js                       desenho da trilha (grama, caminho e ilustrações)
-  js/content/saquarema-2026.js    conteúdo do concurso: lições, questões, flashcards
+  js/content/saquarema-2026.js    conteúdo do concurso de Saquarema
+  js/content/encceja-2027.js      conteúdo do Encceja 2027 (Ensino Médio)
   img/                            logo, favicon, ícones do app e imagem de prévia (og-aprovae-selo.jpg)
   mascote/                        robô oficial: uma pose por arquivo (WebP + PNG transparente)
 ```
@@ -27,8 +29,8 @@ assets/
 Rotas:
 
 - `#inicio`: Home com os produtos
-- `#concursos`: lista de concursos
-- `#saquarema-2026`: trilha do concurso
+- `#concursos` e `#encceja`: lista de provas de cada produto
+- `#saquarema-2026` e `#encceja-2027`: trilha de cada prova
 
 ## Rodar no computador
 
@@ -65,7 +67,11 @@ Também funciona abrindo o `index.html` direto no navegador.
 2. Troque o `id`, os dados do edital (`nome`, `banca`, `prova`, `cargos`, `areas`, `corte`, `total`) e o conteúdo (`UNITS` e `FC_RAW`).
 3. Adicione `<script src="assets/js/content/outro-concurso.js"></script>` no `index.html`, antes do `map.js`.
 
-O concurso aparece sozinho na tela `#concursos`.
+O concurso aparece sozinho na lista do produto indicado em `produto` (`concursos`, `encceja`...).
+
+Campos opcionais úteis: `prova: null` com `provaTexto` (data ainda não definida), `scoring: 'areas'` com `metaAcerto` (provas avaliadas por área, como o Encceja), `aulaLabel: 'AULA'`, `guia` (tela “Sobre a prova”), `documentos`, `dica`, `notaInfo` e `onbNota`. Se houver só um cargo/perfil, a escolha de cargo é pulada.
+
+Tipos de cartão de aula: `C` conceito, `T` macete, `K` comparação, `V` verdadeiro ou falso e `W` laboratório de escrita (texto salvo no aparelho, com checklist).
 
 Formato de cada fase:
 
@@ -80,7 +86,7 @@ Formato de cada fase:
 
 Nas questões, a alternativa correta pode ficar em qualquer posição (o índice indica qual é). O app embaralha as alternativas a cada tentativa.
 
-Temas de ilustração da trilha (`theme` da unidade): `sus`, `campo`, `letras` e `saquarema`. Para criar outro tema, adicione desenhos em `DECOR` e uma lista em `THEMES` no `map.js`.
+Temas de ilustração da trilha (`theme` da unidade): `sus`, `campo`, `letras`, `saquarema`, `matematica`, `natureza`, `humanas` e `redacao`. Para criar outro tema, adicione desenhos em `DECOR` e uma lista em `THEMES` no `map.js`.
 
 ## Planos premium
 

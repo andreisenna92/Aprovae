@@ -636,7 +636,27 @@ FC_RAW.push(
 window.APROVAE_CONCURSOS = window.APROVAE_CONCURSOS || {};
 window.APROVAE_CONCURSOS['saquarema-2026'] = {
   id: 'saquarema-2026',
+  produto: 'concursos',
   mascot: 'notebook',
+  onbNota: 'Português e Legislação são iguais para os dois cargos. Muda o bloco de Específicos.',
+  notaInfo: 'Para passar: <b>54 de 90 pontos</b> e <b>nenhuma disciplina zerada</b>. Exemplo: 14 acertos em Específicos (42 pts) + 6 em Português (12 pts) = 54.',
+  dica: '<b>Dica do Lumi:</b> Específicos valem 2/3 da prova. Cada acerto ali vale o triplo de um acerto de Legislação.',
+  guia: {
+    titulo: 'Edital em 1 minuto',
+    sub: 'Processo Seletivo Público nº 001/2026 • Prefeitura de Saquarema/RJ • Banca IBAM',
+    destaques: [
+      { rotulo: 'ACS', valor: '133', texto: 'vagas • Agente Comunitário de Saúde' },
+      { rotulo: 'ACE', valor: '84', texto: 'vagas • Agente de Combate às Endemias' }
+    ],
+    cards: [
+      { titulo: 'CARGO', linhas: [['Salário', 'R$ 3.242,00'], ['Jornada', '40h semanais'], ['Escolaridade', 'Ensino médio completo'], ['ACS', 'Morar na área desde o edital']] },
+      { titulo: 'DATAS', linhas: [['Inscrições', '17/11 a 22/12/2026'], ['Taxa', 'R$ 94,00 (boleto até 23/12, 21h)'], ['Prova objetiva', '31/01/2027 • 3 horas'], ['ACS', 'Manhã: portão 8h, início 9h10'], ['ACE', 'Tarde: portão 14h, início 15h10'], ['Gabarito preliminar', '01/02/2027']] },
+      { titulo: 'ETAPAS', linhas: [['1. Prova objetiva', 'Eliminatória e classificatória'], ['2. Títulos', 'Classificatória • até 8 pts'], ['3. Curso de Formação Inicial', 'Eliminatório']] }
+    ],
+    estruturaTitulo: 'ESTRUTURA DA PROVA • 40 QUESTÕES • 4 ALTERNATIVAS',
+    aprovacao: 'Aprovação: mínimo de <b>54 pontos (60%)</b> e nenhuma disciplina zerada.',
+    rodape: 'Inscrições em www.ibam-concursos.org.br'
+  },
   nome: 'Prefeitura de Saquarema/RJ',
   cargoGrupo: 'Agentes de Saúde (ACS e ACE)',
   edital: 'Processo Seletivo Público nº 001/2026',

@@ -57,13 +57,52 @@
       <path d="M-26 6 q7.5 -8 15 0 t15 0 t15 0" stroke="#38bdf8"/><path d="M-30 18 q7.5 -8 15 0 t15 0 t15 0 t15 0" stroke="#7dd3fc"/></g>`,
     surf: `${shadow(16)}<g transform="rotate(18)"><ellipse cx="0" cy="-2" rx="11" ry="30" fill="#ffb800"/><path d="M0 -30 V26" stroke="#ff6b81" stroke-width="4"/><path d="M-4 20 l-6 8 h8Z" fill="#0b2a5b"/></g>`,
     sun: `<g stroke="#ffb800" stroke-width="4" stroke-linecap="round"><path d="M0 -30 v-6 M0 30 v6 M-30 0 h-6 M30 0 h6 M-21 -21 l-4 -4 M21 21 l4 4 M-21 21 l-4 4 M21 -21 l4 -4"/></g><circle r="18" fill="#ffd43b"/>`,
-    boat: `${shadow(28)}<path d="M-28 6 h56 l-10 16 h-36Z" fill="#b7791f"/><path d="M0 4 V-30" stroke="#64748b" stroke-width="3"/><path d="M3 -28 L24 2 H3Z" fill="#fff" stroke="#d9e1e8"/><path d="M-3 -22 L-20 2 H-3Z" fill="#06a6c9"/>`
+    boat: `${shadow(28)}<path d="M-28 6 h56 l-10 16 h-36Z" fill="#b7791f"/><path d="M0 4 V-30" stroke="#64748b" stroke-width="3"/><path d="M3 -28 L24 2 H3Z" fill="#fff" stroke="#d9e1e8"/><path d="M-3 -22 L-20 2 H-3Z" fill="#06a6c9"/>`,
+    /* ---- Matemática ---- */
+    calc: `${shadow(22)}<rect x="-18" y="-26" width="36" height="50" rx="6" fill="#1f2937"/><rect x="-13" y="-21" width="26" height="11" rx="2" fill="#a7f3d0"/>
+      <g fill="#f97316"><rect x="-13" y="-5" width="7" height="6" rx="1.5"/><rect x="-3.5" y="-5" width="7" height="6" rx="1.5"/><rect x="6" y="-5" width="7" height="6" rx="1.5" fill="#ffb800"/>
+      <rect x="-13" y="4" width="7" height="6" rx="1.5"/><rect x="-3.5" y="4" width="7" height="6" rx="1.5"/><rect x="6" y="4" width="7" height="15" rx="1.5" fill="#ffb800"/>
+      <rect x="-13" y="13" width="7" height="6" rx="1.5"/><rect x="-3.5" y="13" width="7" height="6" rx="1.5"/></g>`,
+    ruler: `${shadow(28)}<path d="M-28 22 L-28 -26 L22 22Z" fill="#ffd43b" stroke="#e09600" stroke-width="2" stroke-linejoin="round"/><path d="M-20 14 L-20 -6 L0 14Z" fill="#bfe5a2"/>
+      <g stroke="#a16207" stroke-width="2"><path d="M-28 -14 h6 M-28 -4 h6 M-28 6 h6 M-16 22 v-6 M-6 22 v-6 M4 22 v-6"/></g>`,
+    graph: `${shadow(28)}<rect x="-28" y="-24" width="56" height="48" rx="6" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
+      <rect x="-20" y="2" width="8" height="14" rx="2" fill="#93c5fd"/><rect x="-7" y="-6" width="8" height="22" rx="2" fill="#60a5fa"/><rect x="6" y="-14" width="8" height="30" rx="2" fill="#2f80ed"/>
+      <path d="M-20 -6 L-4 -14 L8 -20 L20 -22" stroke="#f97316" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+    pi: `${shadow(20)}<rect x="-20" y="-22" width="40" height="44" rx="10" fill="#f97316"/><text x="0" y="12" font-size="32" font-weight="900" text-anchor="middle" fill="#fff" font-family="Nunito, sans-serif">π</text>`,
+
+    /* ---- Ciências da Natureza ---- */
+    flask: `${shadow(22)}<path d="M-7 -26 h14 v14 l14 26 a6 6 0 0 1 -5 9 h-32 a6 6 0 0 1 -5 -9 l14 -26Z" fill="#e0f2fe" stroke="#94a3b8" stroke-width="2"/>
+      <path d="M-14 4 h28 l7 12 a5 5 0 0 1 -4 7 h-34 a5 5 0 0 1 -4 -7Z" fill="#4ade80"/><circle cx="-4" cy="12" r="3" fill="#bbf7d0"/><circle cx="5" cy="7" r="2" fill="#bbf7d0"/><rect x="-9" y="-30" width="18" height="6" rx="2" fill="#64748b"/>`,
+    atom: `<g fill="none" stroke="#2f80ed" stroke-width="3"><ellipse rx="28" ry="10"/><ellipse rx="28" ry="10" transform="rotate(60)"/><ellipse rx="28" ry="10" transform="rotate(-60)"/></g><circle r="6" fill="#ef4444"/><circle cx="28" cy="0" r="3.5" fill="#16a34a"/>`,
+    plant: `${shadow(20)}<path d="M-14 8 h28 l-4 18 h-20Z" fill="#c2410c"/><rect x="-16" y="4" width="32" height="6" rx="2" fill="#ea580c"/>
+      <path d="M0 4 V-14" stroke="#15803d" stroke-width="3"/><path d="M0 -6 C-18 -6 -20 -22 -20 -22 C-4 -24 0 -12 0 -6Z" fill="#22c55e"/><path d="M0 -12 C16 -12 20 -28 20 -28 C4 -30 0 -18 0 -12Z" fill="#4ade80"/>`,
+    planet: `<circle r="17" fill="#38bdf8"/><path d="M-9 -9 c6 2 8 8 4 12 s-8 2 -10 6" fill="#4ade80"/><path d="M5 2 c4 -2 9 0 9 5 s-6 6 -9 3" fill="#4ade80"/><ellipse rx="30" ry="8" fill="none" stroke="#ffb800" stroke-width="3" transform="rotate(-18)"/>`,
+
+    /* ---- Ciências Humanas ---- */
+    globe: `${shadow(20)}<path d="M0 22 v6 M-12 30 h24" stroke="#64748b" stroke-width="4" stroke-linecap="round"/><path d="M-22 -2 a22 22 0 0 0 44 0" fill="none" stroke="#94a3b8" stroke-width="3"/>
+      <circle cy="-2" r="18" fill="#60a5fa"/><path d="M-10 -14 c6 0 8 6 4 10 s-10 2 -10 8 M4 -4 c6 -4 12 2 8 8 s-8 4 -10 0" fill="#4ade80"/>`,
+    mapa: `${shadow(28)}<path d="M-28 -18 L-10 -24 L10 -18 L28 -24 V18 L10 24 L-10 18 L-28 24Z" fill="#fef3c7" stroke="#e9c46a" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M-10 -24 V18 M10 -18 V24" stroke="#e9c46a" stroke-width="2"/><path d="M-20 10 C-12 0 -2 8 6 -2 S18 -10 20 -14" stroke="#ef4444" stroke-width="2.5" fill="none" stroke-dasharray="3 4" stroke-linecap="round"/><circle cx="20" cy="-14" r="3.5" fill="#ef4444"/>`,
+    column: `${shadow(28)}<path d="M-28 -16 L0 -30 L28 -16Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2" stroke-linejoin="round"/><rect x="-26" y="-16" width="52" height="5" fill="#cbd5e1"/>
+      <g fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"><rect x="-22" y="-11" width="8" height="30"/><rect x="-4" y="-11" width="8" height="30"/><rect x="14" y="-11" width="8" height="30"/></g><rect x="-28" y="19" width="56" height="6" rx="1" fill="#cbd5e1"/>`,
+    hourglass: `${shadow(18)}<rect x="-16" y="-28" width="32" height="5" rx="2" fill="#7c4a1d"/><rect x="-16" y="23" width="32" height="5" rx="2" fill="#7c4a1d"/>
+      <path d="M-12 -23 h24 c0 14 -10 16 -10 23 c0 7 10 9 10 23 h-24 c0 -14 10 -16 10 -23 c0 -7 -10 -9 -10 -23Z" fill="#e0f2fe" stroke="#94a3b8" stroke-width="2"/><path d="M-8 18 c4 -6 12 -6 16 0 v5 h-16Z" fill="#ffb800"/><path d="M-6 -16 h12 l-6 10Z" fill="#ffb800"/>`,
+
+    /* ---- Redação ---- */
+    paper: `${shadow(24)}<rect x="-20" y="-26" width="40" height="52" rx="4" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
+      <g stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"><path d="M-13 -16 h26 M-13 -8 h26 M-13 0 h26 M-13 8 h18"/></g>
+      <circle cx="12" cy="17" r="9" fill="#e11d74"/><path d="M8 17 l3 3 l6 -6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`,
+    quill: `${shadow(18)}<path d="M18 -28 C-2 -22 -14 -2 -16 22 L-10 16 C-4 0 8 -14 18 -28Z" fill="#fbcfe8" stroke="#e11d74" stroke-width="2" stroke-linejoin="round"/><path d="M-16 22 L-22 28" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/><circle cx="-22" cy="28" r="3" fill="#1f2937"/>`
   };
   const THEMES = {
     sus: ['clinic', 'law', 'people', 'heart'],
     campo: ['house', 'tank', 'clipboard', 'magnifier'],
     letras: ['books', 'bubble', 'pencil', 'abc'],
-    saquarema: ['church', 'waves', 'surf', 'boat', 'sun']
+    saquarema: ['church', 'waves', 'surf', 'boat', 'sun'],
+    matematica: ['calc', 'graph', 'ruler', 'pi'],
+    natureza: ['flask', 'plant', 'atom', 'planet'],
+    humanas: ['globe', 'column', 'mapa', 'hourglass'],
+    redacao: ['paper', 'quill', 'books', 'bubble']
   };
 
   function rng(seed) { let s = seed * 9301 + 49297; return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
