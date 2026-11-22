@@ -400,10 +400,9 @@ body.page-app { background: var(--bg); }
 .bubble {
   position: absolute; bottom: calc(100% + 16px); left: 50%; transform: translateX(-50%); background: #fff; border: 2px solid var(--line);
   border-radius: 12px; padding: 6px 12px; font-weight: 900; font-size: 13px; color: var(--cd); white-space: nowrap; letter-spacing: .05em;
-  animation: bob 3.6s cubic-bezier(.45, .05, .55, .95) infinite; box-shadow: 0 3px 0 var(--line);
+  box-shadow: 0 3px 0 var(--line);
 }
 .bubble::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 8px solid transparent; border-top-color: #fff; margin-top: -1px; }
-@keyframes bob { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -4px); } }
 .node-stars { margin-top: 9px; font-size: 13px; color: var(--gold); letter-spacing: -1px; text-shadow: 0 1px 0 rgba(0, 0, 0, .15); line-height: 1; }
 .node-stars i { font-style: normal; color: rgba(255, 255, 255, .7); }
 .node-label {
