@@ -92,7 +92,7 @@ Cada pose é um arquivo próprio em `assets/mascote/`: `robo-principal`, `robo-j
 
 ## Prévia no WhatsApp
 
-As tags `og:*` do `index.html` usam `assets/img/og-aprovae.jpg` (1200×630). Enquanto o site não tem domínio próprio, a imagem é servida direto do GitHub (`raw.githubusercontent.com`). Quando tiver domínio, troque a URL nas tags `og:image`, `og:image:secure_url` e `twitter:image`.
+As tags `og:*` do `index.html` usam `assets/img/og-aprovae-robo.jpg` (800×800, só o mascote), com o endereço completo `https://aprovae-alpha.vercel.app/...`. Se o domínio mudar, troque esse endereço nas tags `og:url`, `og:image`, `og:image:secure_url` e `twitter:image`.
 
 O WhatsApp guarda a prévia em cache. Se ela não atualizar, compartilhe o link com um final diferente, por exemplo `?v=2`.
 
