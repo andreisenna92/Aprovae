@@ -644,7 +644,13 @@ window.APROVAE_CONCURSOS['saquarema-2026'] = {
   prova: [2027, 0, 31],
   vagas: 217,
   salario: 'R$ 3.242,00',
-  editalUrl: 'https://arquivos.qconcursos.com/regulamento/arquivo/103167/prefeitura-de-saquarema-rj-2026-edital-n-1-pss-edital.pdf',
+  editalUrl: 'https://www.ibam-concursos.org.br/documento/ed26_acs_ace.pdf',
+  documentos: [
+    { nome: 'Edital completo', tipo: 'PDF', url: 'https://www.ibam-concursos.org.br/documento/ed26_acs_ace.pdf' },
+    { nome: 'Anexo I – Formulário para solicitação de isenção', tipo: 'DOC', url: 'https://www.ibam-concursos.org.br/documento/anx1psp-saq.doc' },
+    { nome: 'Anexo II – Declaração de residência (Agente Comunitário de Saúde)', tipo: 'DOC', url: 'https://www.ibam-concursos.org.br/documento/anx2psp-saq.doc' },
+    { nome: 'Anexo III – Declaração de residência em nome de terceiros (Agente Comunitário de Saúde)', tipo: 'DOC', url: 'https://www.ibam-concursos.org.br/documento/anx3psp-saq.doc' }
+  ],
   corte: 54, total: 90,
   cargos: {
     acs: { nome: 'Agente Comunitário de Saúde', curto: 'ACS', emoji: '🏡', vagas: 133, turno: 'manhã • início 9h10', desc: 'Prova de manhã • precisa morar na área' },

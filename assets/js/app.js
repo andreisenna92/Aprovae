@@ -303,7 +303,7 @@ function renderShell() {
     </aside>
     <div class="col-main">
       <header class="topbar">
-        <a href="#inicio" class="topbar-brand"><img src="assets/img/mark-96.png?v=2" alt="" width="40" height="40">${wordmark()}</a>
+        <a href="#inicio" class="topbar-brand"><img src="assets/img/mark-96.png?v=3" alt="" width="40" height="40">${wordmark()}</a>
         <div class="topbar-stats">${statChips()}</div>
       </header>
       <main class="main" id="main">${v}</main>
@@ -717,6 +717,9 @@ function viewEdital() {
       <div class="note gold">Aprovação: mínimo de <b>${K.corte} pontos (60%)</b> e nenhuma disciplina zerada.</div></div>
     <div class="card"><small class="eyebrow">ETAPAS</small>${row('1. Prova objetiva', 'Eliminatória e classificatória')}${row('2. Títulos', 'Classificatória • até 8 pts')}${row('3. Curso de Formação Inicial', 'Eliminatório')}</div>
     <a class="btn btn-ghost" href="${K.editalUrl}" target="_blank" rel="noopener">📄 Abrir edital completo</a>
+    ${(K.documentos || []).length ? `<div class="card"><small class="eyebrow">DOCUMENTOS OFICIAIS</small>
+      <div class="docs">${K.documentos.map(d => `<a class="doc" href="${d.url}" target="_blank" rel="noopener"><span class="doc-tipo ${d.tipo === 'PDF' ? 'pdf' : ''}">${d.tipo}</span><span class="doc-nome">${d.nome}</span><span class="doc-go" aria-hidden="true">↗</span></a>`).join('')}</div>
+      <p class="muted small">Os anexos (.doc) abrem no Word ou no Google Docs. Preencha, assine e envie conforme as instruções do edital.</p></div>` : ''}
     <p class="muted small center-t">Inscrições em www.ibam-concursos.org.br</p>
   </div>`;
 }

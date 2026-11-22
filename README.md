@@ -20,7 +20,7 @@ assets/
   js/app.js                       telas, navegação, quiz, flashcards, progresso
   js/map.js                       desenho da trilha (grama, caminho e ilustrações)
   js/content/saquarema-2026.js    conteúdo do concurso: lições, questões, flashcards
-  img/                            logo, favicon, ícones do app e imagem de prévia (og-aprovae.jpg)
+  img/                            logo, favicon, ícones do app e imagem de prévia (og-aprovae-selo.jpg)
   mascote/                        robô oficial: uma pose por arquivo (WebP + PNG transparente)
 ```
 
@@ -92,7 +92,7 @@ Cada pose é um arquivo próprio em `assets/mascote/`: `robo-principal`, `robo-j
 
 ## Prévia no WhatsApp
 
-As tags `og:*` do `index.html` usam `assets/img/og-aprovae-robo.jpg` (800×800, só o mascote), com o endereço completo `https://aprovae-alpha.vercel.app/...`. Se o domínio mudar, troque esse endereço nas tags `og:url`, `og:image`, `og:image:secure_url` e `twitter:image`.
+As tags `og:*` do `index.html` usam `assets/img/og-aprovae-selo.jpg` (800×800, selo redondo do mascote), com o endereço completo `https://aprovae-alpha.vercel.app/...`. Se o domínio mudar, troque esse endereço nas tags `og:url`, `og:image`, `og:image:secure_url` e `twitter:image`.
 
 O WhatsApp guarda a prévia em cache. Se ela não atualizar, compartilhe o link com um final diferente, por exemplo `?v=2`.
 

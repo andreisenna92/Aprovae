@@ -641,3 +641,12 @@ body.page-app { background: var(--bg); }
 .medal-item small { font-size: 11px; font-weight: 700; color: var(--muted); }
 .medal-item.off b { color: var(--faint); }
 @media (min-width: 600px) { .medals { grid-template-columns: repeat(4, minmax(0, 1fr)); } .fb-robo .robo { width: var(--rw); } }
+
+/* ---------- documentos do edital ---------- */
+.docs { display: flex; flex-direction: column; gap: 8px; }
+.doc { display: flex; align-items: center; gap: 12px; border: 2px solid var(--line); border-radius: 14px; padding: 11px 12px; background: #fff; transition: background .12s, border-color .12s; }
+.doc:hover { background: #f5f8ff; border-color: #a9c2f5; }
+.doc-tipo { flex: none; min-width: 42px; text-align: center; font-size: 11px; font-weight: 900; letter-spacing: .04em; padding: 5px 6px; border-radius: 8px; background: #e3edff; color: var(--blue-d); }
+.doc-tipo.pdf { background: var(--red-l); color: var(--red-d); }
+.doc-nome { flex: 1; min-width: 0; font-weight: 800; font-size: 14px; line-height: 1.3; color: var(--navy); }
+.doc-go { flex: none; font-weight: 900; color: var(--faint); }
