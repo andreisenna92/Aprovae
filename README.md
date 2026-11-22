@@ -92,9 +92,9 @@ Temas de ilustração da trilha (`theme` da unidade): `sus`, `campo`, `letras`, 
 
 Cada curso fica em `window.APROVAE_CURSOS[id]` (nome, ícone, descrição, `periodos: {1: 'id-da-trilha'}`, `totalPeriodos`). Cada período é uma trilha comum em `window.APROVAE_CONCURSOS` com `produto: 'graduacao'`, `curso`, `periodo`, `semProva: true` e `scoring: 'areas'`: cada unidade é uma disciplina e cada fase um tema.
 
-- Primeiro curso: **Engenharia de Software** (`assets/js/content/es-p1.js`), 1º período com 9 disciplinas, 36 fases, 144 questões e 72 flashcards.
-- Para liberar outro período, crie `es-p2.js` no mesmo formato, carregue no `index.html` e adicione `2: 'engenharia-software-p2'` em `periodos`.
-- Além dos cartões de aula (C conceito, T dica, K comparação, V verdadeiro/falso), há o cartão **S (simulação)**: `trace` (executa pseudocódigo passo a passo), `bits` (binário/decimal/hexa), `gate` (portas lógicas com tabela-verdade), `atomo` (monte um átomo) e `calc` (velocidade, escala, ponto de equilíbrio).
+- Primeiro curso: **Engenharia de Software**. 1º período em `assets/js/content/es-p1.js` (9 disciplinas, 36 fases, 144 questões, 72 flashcards) e 2º período em `assets/js/content/es-p2.js` (7 disciplinas, 35 fases, 140 questões, 70 flashcards).
+- Para liberar outro período, crie `es-p3.js` no mesmo formato, carregue no `index.html` depois do `es-p1.js` e, no fim do arquivo, registre `APROVAE_CURSOS['engenharia-software'].periodos[3] = 'engenharia-software-p3'` (como faz o `es-p2.js`).
+- Além dos cartões de aula (C conceito, T dica, K comparação, V verdadeiro/falso), há o cartão **S (simulação)**: `trace` (executa pseudocódigo passo a passo), `bits` (binário/decimal/hexa), `gate` (portas lógicas com tabela-verdade), `atomo` (monte um átomo) `calc` (velocidade, escala, ponto de equilíbrio, lucro e margem), `classify` (classificar itens em categorias, com correção), `html` (editor de HTML/CSS/JS com resultado ao vivo), `sort` (bubble sort animado) e `busca` (busca binária passo a passo).
 
 ## Planos premium
 

@@ -322,11 +322,11 @@ function renderCurso(id) {
       <span class="period-info">${plural(k.units.length, 'disciplina', 'disciplinas')}</span>
       <span class="period-bar"><i style="width:${pr.pct}%"></i></span><span class="period-cta">${pr.started ? `Continuar • ${pr.pct}%` : 'Começar'}</span></button>`;
   }).join('');
-  const first = c.periodos[1] && CONCURSOS[c.periodos[1]];
+  const avail = Object.keys(c.periodos).map(Number).sort((a, b) => a - b).map(n => [n, CONCURSOS[c.periodos[n]]]).filter(([, k]) => k);
   $app.innerHTML = `<div class="landing">${subHead('graduacao')}
     <div class="sub-title with-robo"><div><h1>${c.ico} ${c.nome}</h1><p>Escolha o período. Vamos liberando os próximos aos poucos.</p></div>${mascot(110, c.mascot || 'notebook', { decorative: true })}</div>
     <section class="periods">${tiles}</section>
-    ${first ? `<div class="card period-subjects"><small class="eyebrow">DISCIPLINAS DO 1º PERÍODO</small><div class="subj-list">${first.units.map(u => `<span style="--c:${u.c}">${u.emoji} ${u.title}</span>`).join('')}</div></div>` : ''}
+    ${avail.map(([n, k]) => `<div class="card period-subjects"><small class="eyebrow">DISCIPLINAS DO ${n}º PERÍODO</small><div class="subj-list">${k.units.map(u => `<span style="--c:${u.c}">${u.emoji} ${u.title}</span>`).join('')}</div></div>`).join('')}
   </div>`;
 }
 
@@ -340,7 +340,7 @@ function renderOnb() {
       ${mascot(180, 'principal', { eager: true })}
       <h1>Oi! Eu sou o <span class="c-gold">Lumi</span>.</h1>
       <p>Vou acender as ideias certas até a sua aprovação em <b>${K.nome}</b>. Primeiro você aprende, depois pratica.</p>
-      <div class="onb-feats"><div><span>📖</span>${K.aulaLabel ? 'Aula curta' : 'Lição curta'}</div><div><span>🎯</span>Quiz da banca</div><div><span>🃏</span>Flashcards</div></div>
+      <div class="onb-feats"><div><span>📖</span>${K.aulaLabel ? 'Aula curta' : 'Lição curta'}</div><div><span>🎯</span>${K.semProva ? 'Exercícios' : 'Quiz da banca'}</div><div><span>🃏</span>Flashcards</div></div>
     </div>`;
     btn = `<button class="btn btn-green" onclick="AP.onb(1)">Começar</button>`;
   } else if (s === 1) {
@@ -548,7 +548,84 @@ const ELEM = [null, ['H', 'Hidrogênio', 1], ['He', 'Hélio', 4], ['Li', 'Lítio
 const BIT_GOALS = [5, 42, 100, 200, 255];
 const GATES = { E: (a, b) => a && b, OU: (a, b) => a || b, NAO: a => !a, XOU: (a, b) => a !== b };
 const GATE_NOME = { E: 'E (AND)', OU: 'OU (OR)', NAO: 'NÃO (NOT)', XOU: 'XOU (XOR)' };
+function sortSteps(card) {
+  if (card._st) return card._st;
+  const a = [...card.arr]; const n = a.length; const out = [{ a: [...a], j: -1, done: n, note: 'Bubble sort: compara vizinhos e leva o maior para o fim.' }];
+  let cmp = 0, sw = 0;
+  for (let p = 0; p < n - 1; p++) {
+    for (let j = 0; j < n - 1 - p; j++) {
+      const x = a[j], y = a[j + 1]; const t = x > y; cmp++;
+      if (t) { a[j] = y; a[j + 1] = x; sw++; }
+      out.push({ a: [...a], j, swap: t, done: j === n - 2 - p ? n - 1 - p : n - p, note: t ? `${x} > ${y}: troca!` : `${x} ≤ ${y}: mantém.` });
+    }
+  }
+  out.push({ a: [...a], j: -1, done: 0, note: `Ordenado! ${cmp} comparações e ${sw} trocas.` });
+  return (card._st = out);
+}
+function buscaSteps(arr, alvo) {
+  const out = [{ lo: 0, hi: arr.length - 1, mid: -1, note: `Procurando ${alvo}. O vetor está ordenado, então podemos descartar metades.` }];
+  let lo = 0, hi = arr.length - 1, k = 0;
+  while (lo <= hi) {
+    const mid = Math.floor((lo + hi) / 2); k++;
+    if (arr[mid] === alvo) { out.push({ lo, hi, mid, found: true, k, note: `Meio = posição ${mid} (${arr[mid]}). Encontrado em ${k} ${k === 1 ? 'comparação' : 'comparações'}!` }); return out; }
+    const maior = alvo > arr[mid];
+    out.push({ lo, hi, mid, k, note: `Meio = posição ${mid} (${arr[mid]}). ${alvo} é ${maior ? 'maior' : 'menor'}: descarta a metade ${maior ? 'esquerda' : 'direita'}.` });
+    if (maior) lo = mid + 1; else hi = mid - 1;
+  }
+  out.push({ lo, hi, mid: -1, none: true, k, note: `Não sobrou ninguém: ${alvo} não está no vetor. Foram ${k} comparações.` });
+  return out;
+}
+function stepsOf(card, st) {
+  if (card.kind === 'sort') return sortSteps(card);
+  if (card.kind === 'busca') { const alvo = card.alvos[(st.t || 0) % card.alvos.length]; if (st._alvo !== alvo) { st._alvo = alvo; st._s = buscaSteps(card.arr, alvo); } return st._s; }
+  return card.steps || [];
+}
+const ctrl = (st, n) => `<div class="sim-ctrl"><button class="chip" ${st.p ? '' : 'disabled'} onclick="AP.sim('prev')">‹ Voltar</button><b class="muted small">Passo ${st.p + 1} de ${n}</b>
+  ${st.p < n - 1 ? '<button class="chip on" onclick="AP.sim(\'next\')">Próximo ›</button>' : '<button class="chip" onclick="AP.sim(\'reset\')">↺ Reiniciar</button>'}</div>`;
+const HTML_BASE = '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:12px;color:#0f172a;line-height:1.4}</style>';
 function simHtml(card, st) {
+  if (card.kind === 'classify') {
+    st.q = st.q || 0; st.ok = st.ok || 0; const n = card.items.length;
+    if (st.q >= n) return `<div class="classify"><div class="cls-end">${st.ok === n ? '🏆' : '👏'} Você acertou <b>${st.ok} de ${n}</b>.</div><div class="sim-ctrl"><span></span><button class="chip on" onclick="AP.sim('creset')">↺ Fazer de novo</button></div></div>`;
+    const [txt, ans, why] = card.items[st.q]; const picked = st.pick != null;
+    return `<div class="classify">
+      ${card.intro ? `<p class="cls-intro">${card.intro}</p>` : ''}
+      <div class="cls-item"><small>${st.q + 1} de ${n}</small><b>${txt}</b></div>
+      <div class="cls-btns ${card.cats.length > 2 ? 'four' : ''}">${card.cats.map((c, k) => `<button class="chip ${picked ? (k === ans ? 'right' : k === st.pick ? 'wrong' : '') : ''}" ${picked ? 'disabled' : ''} onclick="AP.sim('pick', ${k})">${c}</button>`).join('')}</div>
+      ${picked ? `<div class="cls-fb ${st.pick === ans ? 'ok' : 'no'}"><b>${st.pick === ans ? '✅ Isso!' : '❌ Quase.'}</b> ${why}</div>
+        <div class="sim-ctrl"><b class="muted small">Acertos: ${st.ok}</b><button class="chip on" onclick="AP.sim('cnext')">${st.q < n - 1 ? 'Próximo ›' : 'Ver resultado'}</button></div>` : ''}
+    </div>`;
+  }
+  if (card.kind === 'html') {
+    if (st.code == null) st.code = card.code;
+    setTimeout(() => AP.htmlRun(), 0);
+    return `<div class="htmlsim">
+      <div class="hs-pane"><small>✏️ CÓDIGO</small><textarea id="hsCode" spellcheck="false" autocapitalize="off" autocomplete="off" oninput="AP.htmlRun(this.value)">${esc(st.code)}</textarea></div>
+      <div class="hs-pane"><small>👀 RESULTADO</small><iframe id="hsOut" title="Resultado do código" sandbox="allow-scripts"></iframe></div>
+      ${card.dica ? `<p class="trace-note">💡 ${esc(card.dica)}</p>` : ''}
+      <div class="sim-ctrl"><span></span><button class="chip" onclick="AP.sim('hreset')">↺ Restaurar código</button></div>
+    </div>`;
+  }
+  if (card.kind === 'sort') {
+    const steps = sortSteps(card); st.p = Math.min(st.p || 0, steps.length - 1); const s = steps[st.p]; const mx = Math.max(...card.arr);
+    return `<div class="sortsim">
+      <div class="bars">${s.a.map((v, i) => `<div class="barc ${i === s.j || i === s.j + 1 ? (s.swap ? 'is-swap' : 'is-cmp') : ''} ${i >= s.done ? 'is-fin' : ''}"><i style="height:${Math.round(v / mx * 100)}%"></i><b>${v}</b></div>`).join('')}</div>
+      <p class="trace-note">💬 ${s.note}</p>
+      <div class="sort-leg"><span class="lg lg-cmp">comparando</span><span class="lg lg-swap">trocou</span><span class="lg lg-fin">no lugar certo</span></div>
+      ${ctrl(st, steps.length)}
+    </div>`;
+  }
+  if (card.kind === 'busca') {
+    const steps = stepsOf(card, st); st.p = Math.min(st.p || 0, steps.length - 1); const s = steps[st.p];
+    const idx = card.arr.indexOf(st._alvo); const lin = idx >= 0 ? idx + 1 : card.arr.length;
+    return `<div class="buscasim">
+      <div class="bs-top"><span>🎯 Alvo: <b>${st._alvo}</b></span><button class="chip" onclick="AP.sim('alvo')">Outro alvo</button></div>
+      <div class="cells">${card.arr.map((v, i) => `<div class="cell ${i < s.lo || i > s.hi ? 'out' : ''} ${i === s.mid ? (s.found ? 'found' : 'mid') : ''}"><b>${v}</b><small>${i}</small></div>`).join('')}</div>
+      <p class="trace-note">💬 ${s.note}</p>
+      ${st.p === steps.length - 1 ? `<p class="muted small">A busca linear precisaria de <b>${lin}</b> ${lin === 1 ? 'comparação' : 'comparações'} para chegar ao mesmo resultado.</p>` : ''}
+      ${ctrl(st, steps.length)}
+    </div>`;
+  }
   if (card.kind === 'trace') {
     st.p = st.p || 0; const step = card.steps[st.p];
     let out = ''; for (let i = 0; i <= st.p; i++) if (card.steps[i].out != null) out = card.steps[i].out;
@@ -612,7 +689,8 @@ function simHtml(card, st) {
     const fields = {
       velocidade: f('kmh', 'Velocidade', 72, 'km/h'),
       escala: f('des', 'Medida no desenho', 8, 'cm') + f('esc', 'Escala 1 :', 50, ''),
-      equilibrio: f('cf', 'Custos fixos (mês)', 6000, 'R$') + f('pr', 'Preço de venda', 50, 'R$') + f('cv', 'Custo variável unitário', 20, 'R$')
+      equilibrio: f('cf', 'Custos fixos (mês)', 6000, 'R$') + f('pr', 'Preço de venda', 50, 'R$') + f('cv', 'Custo variável unitário', 20, 'R$'),
+      margem: f('rec', 'Receita do mês', 20000, 'R$') + f('cus', 'Custos + despesas', 15000, 'R$')
     }[card.calc];
     setTimeout(() => AP.calc(card.calc), 0);
     return `<div class="calc"><div class="cfields">${fields}</div><div class="calc-out" id="calcOut"></div></div>`;
@@ -994,12 +1072,17 @@ window.AP = {
   },
   sim(action, arg) {
     const L = UI.lesson; if (!L || !L.sim) return; const st = L.sim; const card = FASES[L.fid].f.lesson[L.i];
-    if (action === 'next') st.p = Math.min(card.steps.length - 1, (st.p || 0) + 1);
+    if (action === 'next') st.p = Math.min(stepsOf(card, st).length - 1, (st.p || 0) + 1);
     if (action === 'prev') st.p = Math.max(0, (st.p || 0) - 1);
     if (action === 'reset') st.p = 0;
     if (action === 'bit') st.v = (st.v || 0) ^ arg;
     if (action === 'goal') { st.g = (st.g || 0) + 1; st.v = 0; }
     if (action === 'gate') st.g = arg;
+    if (action === 'pick' && st.pick == null && card.items[st.q || 0]) { st.q = st.q || 0; st.pick = arg; if (arg === card.items[st.q][1]) st.ok = (st.ok || 0) + 1; }
+    if (action === 'cnext') { st.q = (st.q || 0) + 1; st.pick = null; }
+    if (action === 'creset') { st.q = 0; st.ok = 0; st.pick = null; }
+    if (action === 'alvo') { st.t = (st.t || 0) + 1; st.p = 0; }
+    if (action === 'hreset') st.code = card.code;
     if (action === 'a') st.a = !st.a;
     if (action === 'b') st.b = !st.b;
     if (action === 'inc' || action === 'dec') {
@@ -1007,6 +1090,11 @@ window.AP = {
       if (arg === 'z') { st.e = st.z; st.n = ELEM[st.z][2] - st.z; }
     }
     const el = document.getElementById('sim'); if (el) el.innerHTML = simHtml(card, st);
+  },
+  htmlRun(v) {
+    const L = UI.lesson; if (!L || !L.sim) return;
+    if (v != null) L.sim.code = v;
+    clearTimeout(UI._ht); UI._ht = setTimeout(() => { const f = document.getElementById('hsOut'); if (f) f.srcdoc = HTML_BASE + (L.sim.code || ''); }, v == null ? 0 : 350);
   },
   calc(kind) {
     const out = document.getElementById('calcOut'); if (!out) return;
@@ -1016,6 +1104,11 @@ window.AP = {
       const cf = num('cf'), pr = num('pr'), cv = num('cv'); const m = pr - cv;
       out.innerHTML = m <= 0 ? '<b class="c-red">Sem equilíbrio</b><span>O preço precisa ser maior que o custo variável.</span>'
         : `<b>${fmtN(Math.ceil(cf / m), 0)} unidades/mês</b><span>Margem: R$ ${fmtN(m)} • Receita no equilíbrio: R$ ${fmtN(Math.ceil(cf / m) * pr)}</span>`;
+    }
+    if (kind === 'margem') {
+      const rec = num('rec'), cus = num('cus'); const l = rec - cus;
+      out.innerHTML = rec <= 0 ? '<b class="c-red">Informe a receita</b><span>A margem é calculada sobre a receita.</span>'
+        : `<b>${l >= 0 ? 'Lucro' : 'Prejuízo'}: R$ ${fmtN(Math.abs(l))}</b><span>Margem de lucro: ${fmtN(l / rec * 100, 1)}% • (${fmtN(rec)} − ${fmtN(cus)}) ÷ ${fmtN(rec)}</span>`;
     }
   },
   draft(key, v) {
@@ -1082,7 +1175,7 @@ window.AP = {
   },
   confirmReset() {
     $layer.innerHTML = `<div class="overlay" onclick="AP.closeSheet()"></div><div class="sheet center-t" role="dialog" aria-modal="true">
-      ${mascot(100, 'atencao')}<h3>Zerar tudo?</h3><p class="muted">XP, estrelas, sequência, flashcards e caderno de erros deste concurso serão apagados deste aparelho.</p>
+      ${mascot(100, 'atencao')}<h3>Zerar tudo?</h3><p class="muted">XP, estrelas, sequência, flashcards e caderno de erros desta trilha serão apagados deste aparelho.</p>
       <div class="stack"><button class="btn btn-red" onclick="AP.doReset()">Sim, zerar</button><button class="link-btn" onclick="AP.closeSheet()">Cancelar</button></div></div>`;
   },
   doReset() { store.del(keyOf(K.id)); const id = K.id; K = null; openConcurso(id); render(); },

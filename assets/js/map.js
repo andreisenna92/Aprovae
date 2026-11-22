@@ -134,7 +134,11 @@
     comunidade: ['people', 'house', 'heart', 'clipboard'],
     desenho: ['compass', 'cube', 'ruler', 'blueprint'],
     hardware: ['chip', 'monitor', 'ram', 'gear'],
-    negocios: ['rocket', 'coin', 'graph', 'bulb']
+    negocios: ['rocket', 'coin', 'graph', 'bulb'],
+    gestao: ['graph', 'coin', 'people', 'clipboard'],
+    etica: ['law', 'people', 'globe', 'heart'],
+    web: ['laptop', 'brackets', 'monitor', 'bug'],
+    requisitos: ['clipboard', 'flow', 'magnifier', 'blueprint']
   };
 
   function rng(seed) { let s = seed * 9301 + 49297; return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
