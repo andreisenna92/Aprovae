@@ -179,7 +179,7 @@ function renderLanding() {
   $app.innerHTML = `
   <div class="landing">
     <header class="land-hero">
-      <img class="land-logo" src="assets/img/logo-aprovae.webp" alt="Aprovaê — Plataforma de aprendizagem" width="1200" height="361">
+      <img class="land-logo" src="assets/img/logo-aprovae.webp?v=2" alt="Aprovaê — Plataforma de aprendizagem" width="1200" height="361">
       <div class="land-hero-row">
         <div class="land-copy">
           <h1>Aprenda de verdade,<br><span>uma fase por vez.</span></h1>
@@ -220,7 +220,7 @@ function renderConcursos() {
   <div class="landing">
     <header class="sub-head">
       <a href="#inicio" class="back-link" aria-label="Voltar para o início">‹</a>
-      <a href="#inicio"><img src="assets/img/logo-aprovae.webp" alt="Aprovaê" class="sub-logo" width="180" height="54"></a>
+      <a href="#inicio"><img src="assets/img/logo-aprovae.webp?v=2" alt="Aprovaê" class="sub-logo" width="180" height="54"></a>
     </header>
     <div class="sub-title"><h1>${wordmark('Concursos')}</h1><p>Escolha o concurso que você vai prestar.</p></div>
     <section class="contests">${list}
@@ -289,7 +289,7 @@ function renderShell() {
   const v = (views[UI.tab] || viewHome)();
   $app.innerHTML = `<div class="shell">
     <aside class="side">
-      <a href="#inicio" class="side-logo"><img src="assets/img/logo-aprovae.webp" alt="Aprovaê" width="190" height="57"></a>
+      <a href="#inicio" class="side-logo"><img src="assets/img/logo-aprovae.webp?v=2" alt="Aprovaê" width="190" height="57"></a>
       <nav class="side-nav">${NAV.map(navItem('side-item')).join('')}
         <button class="side-item ${UI.tab === 'edital' ? 'on' : ''}" onclick="AP.tab('edital')"><span class="nav-ico">📋</span><span>Edital</span></button></nav>
       <div class="side-foot">
@@ -299,7 +299,7 @@ function renderShell() {
     </aside>
     <div class="col-main">
       <header class="topbar">
-        <a href="#inicio" class="topbar-brand"><img src="assets/img/mark-96.png" alt="" width="40" height="40">${wordmark()}</a>
+        <a href="#inicio" class="topbar-brand"><img src="assets/img/mark-96.png?v=2" alt="" width="40" height="40">${wordmark()}</a>
         <div class="topbar-stats">${statChips()}</div>
       </header>
       <main class="main" id="main">${v}</main>

@@ -96,6 +96,10 @@ As tags `og:*` do `index.html` usam `assets/img/og-aprovae.jpg` (1200×630). Enq
 
 O WhatsApp guarda a prévia em cache. Se ela não atualizar, compartilhe o link com um final diferente, por exemplo `?v=2`.
 
+## Atualizações e cache
+
+O `vercel.json` manda o navegador sempre conferir se há versão nova. No `index.html`, os arquivos levam `?v=DATA`: ao publicar mudanças em CSS, JS ou ícones, atualize esse número para forçar o download.
+
 ## Conteúdo e direitos autorais
 
 Todas as lições, questões e flashcards foram **escritos especialmente para o Aprovaê**. Nenhuma questão foi copiada de provas ou de bancos de questões. Os trechos de lei citados (Constituição, Leis 8.080/90, 8.142/90, 11.350/06 e outras) são de domínio público.
