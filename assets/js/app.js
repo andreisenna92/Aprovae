@@ -26,6 +26,8 @@ const todayStr = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth()
 const yesterdayStr = () => { const d = new Date(); d.setDate(d.getDate() - 1); return todayStr(d); };
 const fmtDate = ([y, m, d]) => String(d).padStart(2, '0') + '/' + String(m + 1).padStart(2, '0') + '/' + y;
 const daysTo = ([y, m, d]) => Math.max(0, Math.ceil((new Date(y, m, d) - new Date(new Date().toDateString())) / 86400000));
+const daysBetween = (a, b) => Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 86400000);
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 const plural = (n, s, p) => n + ' ' + (n === 1 ? s : p);
 const store = {
   get(k) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return store._m[k] || null; } },
@@ -54,12 +56,12 @@ const ROBO_ALT = {
   legislacao: 'Robô Aprovaê+ de toga com livro jurídico', graduacao: 'Robô Aprovaê+ de beca',
   campo: 'Robô Aprovaê+ de colete com prancheta'
 };
-/** Robô na altura pedida (px). pose: chave de ROBO. opts: { float, enter, decorative, eager, cls } */
+/** Robô (imagem parada) na altura pedida (px). pose: chave de ROBO. opts: { decorative, eager, cls } */
 function mascot(size = 96, pose = 'principal', opts = {}) {
   if (!ROBO[pose]) pose = 'principal';
   const [w, h] = ROBO[pose];
   const W = Math.round(size * w / h);
-  const cls = ['robo', opts.float ? 'robo-float' : '', opts.enter === false ? '' : 'robo-enter', opts.cls || ''].join(' ').trim();
+  const cls = ('robo ' + (opts.cls || '')).trim();
   const alt = opts.decorative ? '' : ROBO_ALT[pose];
   return `<picture class="${cls}" style="--rw:${W}px;--rh:${size}px"><source srcset="assets/mascote/robo-${pose}.webp?v=3" type="image/webp"><img src="assets/mascote/robo-${pose}.png?v=3" width="${W}" height="${size}" alt="${alt}" ${opts.eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" draggable="false"></picture>`;
 }
@@ -103,13 +105,15 @@ let K = null;   // concurso ativo
 let S = null;   // progresso salvo
 let UI = null;  // estado da tela
 let FASES = {}, FLASH = [];
-const defaultState = () => ({ onb: false, cargo: null, goal: 50, xp: 0, streak: 0, lastDay: null, day: { d: null, xp: 0 }, done: {}, stats: { esp: { r: 0, t: 0 }, port: { r: 0, t: 0 }, leg: { r: 0, t: 0 } }, errors: {}, cards: {}, sound: true });
+const defaultState = () => ({ onb: false, cargo: null, goal: 50, xp: 0, streak: 0, lastDay: null, day: { d: null, xp: 0 }, done: {}, stats: { esp: { r: 0, t: 0 }, port: { r: 0, t: 0 }, leg: { r: 0, t: 0 } }, errors: {}, cards: {}, medals: {}, sound: true });
 const keyOf = id => 'aprovae:v2:' + id;
 function openConcurso(id) {
   if (K && K.id === id) return;
   K = CONCURSOS[id];
   S = Object.assign(defaultState(), store.get(keyOf(id)) || {});
-  UI = { tab: 'home', screen: 'tabs', onbStep: 0, sheet: null, fc: { filter: 'todas', idx: 0, only: false }, topicFilter: 'todas', scrollToCurrent: true };
+  S.medals = S.medals || {};
+  const away = S.lastDay ? daysBetween(S.lastDay, todayStr()) : null;
+  UI = { away, welcome: true, tab: 'home', screen: 'tabs', onbStep: 0, sheet: null, fc: { filter: 'todas', idx: 0, only: false }, topicFilter: 'todas', scrollToCurrent: true };
   FASES = {}; K.units.forEach(u => u.fases.forEach(f => { FASES[f.id] = { f, u }; }));
   FLASH = K.flashcards.map(([fid, front, back], i) => ({ id: fid + '~' + i, fid, front, back }));
 }
@@ -185,7 +189,7 @@ function renderLanding() {
           <h1>Aprenda de verdade,<br><span>uma fase por vez.</span></h1>
           <p>Lições curtas antes de cada quiz, questões no estilo da banca, flashcards e revisão dos seus erros. Tudo para você chegar confiante no dia da prova.</p>
         </div>
-        <div class="land-lumi">${mascot(190, 'principal', { float: true, eager: true })}${speech('Escolha por onde começar! 👇')}</div>
+        <div class="land-lumi">${mascot(190, 'principal', { eager: true })}${speech('Escolha por onde começar! 👇')}</div>
       </div>
     </header>
     <section class="land-products" aria-label="Escolha sua trilha">${cards}</section>
@@ -236,7 +240,7 @@ function renderOnb() {
   let body = '', btn = '';
   if (s === 0) {
     body = `<div class="onb-center fade">
-      ${mascot(180, 'principal', { float: true, eager: true })}
+      ${mascot(180, 'principal', { eager: true })}
       <h1>Oi! Eu sou o <span class="c-gold">Lumi</span>.</h1>
       <p>Vou acender as ideias certas até a sua aprovação no concurso de <b>${K.nome}</b>. Primeiro você aprende, depois pratica.</p>
       <div class="onb-feats"><div><span>📖</span>Lição curta</div><div><span>🎯</span>Quiz da banca</div><div><span>🃏</span>Flashcards</div></div>
@@ -338,6 +342,25 @@ function railWidgets() {
 }
 
 /* ---------- TRILHA ---------- */
+function welcomeCard() {
+  if (!UI.welcome) return '';
+  const d = daysTo(K.prova); const meta = `${dayXP()}/${S.goal} XP`;
+  let pose = 'principal', title, text, cls = '';
+  if (!S.xp && !Object.keys(S.done).length) {
+    title = 'Bem-vindo(a) ao Aprovaê+!';
+    text = `Eu vou te acompanhar em cada fase até a prova. Comece pela primeira fase da trilha: é rapidinho!`;
+  } else if (UI.away !== null && UI.away >= 2) {
+    pose = 'atencao'; cls = 'motivate';
+    title = `Que bom te ver de volta! 💛`;
+    text = `Faz ${UI.away} dias que você não estuda${S.streak > 1 ? ' e sua sequência zerou' : ''}. Faltam <b>${d} dias</b> para a prova: uma fase de 5 minutos já te coloca de volta no ritmo.`;
+  } else {
+    title = 'Bem-vindo(a) de volta!';
+    text = streakNow() ? `Sua sequência está em <b>🔥 ${plural(streakNow(), 'dia', 'dias')}</b>. Meta de hoje: <b>${meta}</b>. Bora continuar?` : `Meta de hoje: <b>${meta}</b>. Uma fase por dia já faz diferença!`;
+  }
+  return `<div class="welcome ${cls}">${mascot(92, pose, { decorative: true })}
+    <div class="welcome-txt"><b>${title}</b><p>${text}</p></div>
+    <button class="welcome-x" onclick="AP.closeWelcome()" aria-label="Fechar mensagem">✕</button></div>`;
+}
 function viewHome() {
   const d = daysTo(K.prova);
   const all = allNodes(); const doneN = all.filter(n => isDone(n.id)).length;
@@ -374,6 +397,7 @@ function viewHome() {
     </section>`;
   }).join('');
   return `<div class="fade page">
+    ${welcomeCard()}
     <div class="trail-head">
       <div><small class="eyebrow">APROVAÊ+CONCURSOS</small><h1>${K.nome}</h1><p class="muted">${cargo().nome}</p></div>
       <button class="chip" onclick="AP.tab('edital')">📋 Edital</button>
@@ -424,7 +448,7 @@ function renderLesson() {
   let inner = '', canGo = true;
   if (isReady) {
     inner = `<div class="ready pop">
-      ${mascot(140, 'atencao', { float: true })}
+      ${mascot(140, 'atencao')}
       <h2>Pronto para o quiz!</h2><p class="muted">Você acabou de ver:</p>
       <div class="stack">${cards.filter(c => c.t !== 'check').map(c => `<div class="seen" style="--c:${u.c}"><span>✓</span>${c.title}</div>`).join('')}</div>
       <p class="muted small">🎯 ${f.quiz.length} questões • ❤️ 5 vidas • errou, a questão volta no final</p>
@@ -483,9 +507,10 @@ function renderQuiz() {
     const ok = z.lastOk; const correctPos = it.order.indexOf(q.a);
     foot = `<div class="focus-foot ${ok ? 'is-ok' : 'is-bad'} slide-up"><div class="focus-foot-in">
       <div class="feedback">
-        <span class="fb-ico">${ok ? '✓' : '✕'}</span>
+        <span class="fb-robo">${mascot(76, ok ? 'comemoracao' : 'joinha', { decorative: true })}</span>
         <div><b class="fb-title">${ok ? z.praise : 'Resposta correta: ' + letters[correctPos]}</b>
-        <small class="fb-sub">${ok ? `+${z.lastGain} XP${z.combo >= 3 ? ' • combo 🔥' + z.combo : ''}` : 'Essa questão volta no final • ❤️ −1'}</small>
+        <small class="fb-sub">${ok ? `+${z.lastGain} XP${z.combo >= 3 ? ' • combo 🔥' + z.combo : ''}` : '❤️ −1 • você vai tentar de novo no final'}</small>
+        ${ok ? '' : `<p class="fb-cheer">${z.cheer}</p>`}
         <p>${q.e}</p></div>
       </div>
       <button class="btn ${ok ? 'btn-green' : 'btn-red'}" onclick="AP.next()">Continuar</button>
@@ -513,6 +538,7 @@ function renderQuiz() {
 }
 
 /* ---------- RESULTADO / FALHA ---------- */
+const medalHtml = (m, big) => `<span class="medal ${big ? 'big' : ''} ${m.locked ? 'locked' : ''}" style="--c:${m.c};--cd:${m.cd}" aria-hidden="true"><i class="medal-rib"></i><i class="medal-disc">${m.locked ? '🔒' : m.emoji}</i></span>`;
 function renderResult() {
   document.body.className = 'page-focus';
   const r = UI.result;
@@ -522,7 +548,8 @@ function renderResult() {
   const tile = (c, label, val) => `<div class="tile" style="--tc:${c}"><small>${label}</small><b>${val}</b></div>`;
   $app.innerHTML = `<div class="focus">
     <div class="focus-body center result">
-      ${mascot(170, r.mode === 'boss' ? 'conquista' : r.acc >= 60 ? 'comemoracao' : 'joinha', { float: true })}
+      ${mascot(170, r.mode === 'boss' ? 'conquista' : r.acc >= 60 ? 'comemoracao' : 'joinha')}
+      ${r.medal ? `<div class="medal-award">${medalHtml(r.medal, true)}<div><small>${r.medal.isNew ? 'NOVA MEDALHA!' : 'MEDALHA'}</small><b>${r.medal.title}</b><span>O robô te entregou a medalha da unidade. Ela fica guardada em “Você”.</span></div></div>` : ''}
       ${showStars ? `<div class="stars">${[0, 1, 2].map(i => `<span class="${i < r.stars ? 'on' : 'off'}" style="animation-delay:${.2 + i * .2}s">★</span>`).join('')}</div>` : ''}
       <h1 class="c-gold">${titles[r.mode]}</h1>
       <p class="muted">${msg}</p>
@@ -661,6 +688,8 @@ function viewProgress() {
         <div class="bar thin"><i style="width:${r.acc === null ? 0 : r.acc * 100}%;background:${r.a.cor}"></i></div></div>`).join('')}</div>
       <div class="note">📌 Para passar: <b>${K.corte} de ${K.total} pontos</b> e <b>nenhuma disciplina zerada</b>. Exemplo: 14 acertos em Específicos (42 pts) + 6 em Português (12 pts) = 54.</div>
     </div>
+    <div class="card"><small class="eyebrow">MEDALHAS • ${Object.keys(S.medals).length}/${K.units.length}</small>
+      <div class="medals">${K.units.map(u => { const got = !!S.medals[u.id]; return `<div class="medal-item ${got ? '' : 'off'}">${medalHtml({ c: u.c, cd: u.cd, emoji: u.emoji, locked: !got })}<b>${u.title}</b><small>${got ? 'Conquistada' : 'Vença o desafio da unidade'}</small></div>`; }).join('')}</div></div>
     <div class="card"><small class="eyebrow">TRILHA POR UNIDADE</small><div class="stack">${unitsProg}</div></div>
     <div class="card settings">
       <small class="eyebrow">AJUSTES</small>
@@ -707,11 +736,23 @@ function finishQuiz() {
     const prev = S.done[z.fid];
     S.done[z.fid] = { stars: Math.max(stars, prev ? prev.stars : 0), at: Date.now() };
   }
+  let medal = null;
+  if (z.mode === 'boss') {
+    const u = K.units.find(x => x.id === z.unitId);
+    medal = { unitId: u.id, title: u.title, emoji: u.emoji, c: u.c, cd: u.cd, isNew: !S.medals[u.id] };
+    if (!S.medals[u.id]) S.medals[u.id] = { at: Date.now() };
+  }
   const goalHit = addXP(total);
-  UI.result = { stars, xp: total, acc: z.firstTotal ? Math.round(z.firstRight / z.firstTotal * 100) : 100, combo: z.maxCombo, mode: z.mode, goalHit };
+  UI.result = { medal, stars, xp: total, acc: z.firstTotal ? Math.round(z.firstRight / z.firstTotal * 100) : 100, combo: z.maxCombo, mode: z.mode, goalHit };
   UI.screen = 'result'; render(); window.scrollTo(0, 0); confetti();
 }
 const PRAISE = ['Mandou bem!', 'Excelente!', 'Isso aí!', 'Perfeito!', 'Arrasou!', 'Show!'];
+const CHEER = [
+  'Errar faz parte! Leia a explicação: essa questão volta no final para você tentar de novo.',
+  'Quase! Agora você já sabe o porquê. Daqui a pouco ela aparece de novo.',
+  'Respira e segue! Cada erro de hoje é um acerto no dia da prova.',
+  'Tudo bem errar aqui: é treino. Guarda a explicação e tenta de novo no final.'
+];
 
 window.AP = {
   go,
@@ -719,6 +760,9 @@ window.AP = {
   setCargo(id, inApp) { S.cargo = id; if (inApp) save(); render(); },
   setGoal(v, inApp) { S.goal = v; if (inApp) save(); render(); },
   finishOnb() { S.onb = true; save(); UI.screen = 'tabs'; UI.tab = 'home'; UI.scrollToCurrent = true; render(); },
+  // usado pelos testes automáticos
+  _debug() { return { UI, S, getQ }; },
+  closeWelcome() { UI.welcome = false; const el = document.querySelector('.welcome'); if (el) el.remove(); },
   tab(id) { UI.tab = id; UI.sheet = null; UI.screen = 'tabs'; render(); window.scrollTo(0, 0); },
   home() { UI.screen = 'tabs'; UI.tab = UI.backTab || 'home'; UI.lesson = null; UI.quiz = null; UI.backTab = null; UI.scrollToCurrent = UI.tab === 'home'; render(); if (UI.tab !== 'home') window.scrollTo(0, 0); },
   sheet(uid, i) { UI.sheet = { uid, i }; renderSheet(); },
@@ -749,7 +793,7 @@ window.AP = {
     const z = UI.quiz; const it = z.queue[z.idx]; const q = getQ(it.key);
     if (z.sel === null || z.checked) return;
     const ok = it.order[z.sel] === q.a;
-    z.checked = true; z.lastOk = ok; z.praise = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+    z.checked = true; z.lastOk = ok; z.praise = pick(PRAISE); z.cheer = pick(CHEER);
     const area = q.unit.area;
     if (!it.retry) { z.firstTotal++; if (z.mode !== 'review') { S.stats[area].t++; if (ok) S.stats[area].r++; } }
     if (ok) {

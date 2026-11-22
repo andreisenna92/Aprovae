@@ -120,15 +120,7 @@ input { font: inherit; }
 /* ---------- mascote e fala ---------- */
 .robo { display: inline-block; flex: none; width: var(--rw); max-width: 100%; line-height: 0; }
 .robo img { width: 100%; height: auto; display: block; user-select: none; -webkit-user-drag: none; }
-.robo-enter { animation: roboIn .9s cubic-bezier(.22, .61, .36, 1) both; }
-@keyframes roboIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-.robo-float img { animation: roboFloat 7s cubic-bezier(.45, .05, .55, .95) 1s infinite; will-change: transform; transform-origin: 50% 90%; }
-@keyframes roboFloat {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  30% { transform: translateY(-4px) rotate(-.6deg); }
-  55% { transform: translateY(-5px) rotate(.3deg); }
-  80% { transform: translateY(-2px) rotate(.5deg); }
-}
+/* mascote fica parado: sem animações de flutuação ou entrada */
 .speech { position: relative; background: #fff; border: 2px solid var(--line); border-radius: 16px; padding: 12px 14px; font-weight: 800; font-size: 15px; line-height: 1.35; box-shadow: 0 3px 0 var(--line); }
 .lumi-say { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
 .lumi-say .speech { flex: 1; margin-top: 8px; }
@@ -163,7 +155,7 @@ body.page-landing { background: #fff; background-image: radial-gradient(circle a
 .product.is-on { padding-right: 136px; }
 .product.is-on .product-robo .robo { filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .3)); }
 .product.is-off .product-robo { display: none; opacity: .9; filter: saturate(.75); }
-.product.is-on .product-robo img { animation: roboFloat 7.5s cubic-bezier(.45, .05, .55, .95) 1.4s infinite; transform-origin: 50% 90%; }
+
 @media (max-width: 599px) {
   .product.is-off { min-height: 0; display: grid; grid-template-columns: 36px 1fr auto; align-items: center; column-gap: 12px; row-gap: 2px; padding: 14px 16px; }
   .product.is-off .product-ico { grid-row: span 2; font-size: 26px; }
@@ -619,3 +611,33 @@ body.page-app { background: var(--bg); }
   .main { padding-top: 28px; }
   .countdown-card { display: none; }
 }
+
+/* ---------- robô em contexto ---------- */
+.welcome { position: relative; display: flex; align-items: center; gap: 12px; background: #fff; border: 2px solid #dbe6fb; border-radius: 20px; padding: 12px 40px 12px 12px; box-shadow: var(--shadow); }
+.welcome .robo { width: min(var(--rw), 22vw); }
+.welcome-txt > b { display: block; font-size: 16px; font-weight: 900; color: var(--navy); }
+.welcome-txt p { font-size: 14px; font-weight: 600; color: #475569; margin-top: 2px; line-height: 1.4; }
+.welcome.motivate { background: #fffbea; border-color: #ffe39a; }
+.welcome-x { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 9px; color: var(--faint); font-weight: 900; }
+.welcome-x:hover { background: #f1f5f9; color: var(--muted); }
+.fb-robo { flex: none; line-height: 0; }
+.fb-robo .robo { width: min(var(--rw), 17vw); }
+.fb-cheer { font-weight: 800 !important; }
+.medal { position: relative; display: inline-flex; flex-direction: column; align-items: center; flex: none; width: 48px; height: 62px; }
+.medal-rib { position: absolute; top: 0; left: 50%; width: 30px; height: 26px; transform: translateX(-50%); background: linear-gradient(90deg, var(--c) 0 50%, var(--cd) 50% 100%); clip-path: polygon(0 0, 100% 0, 80% 100%, 50% 80%, 20% 100%); }
+.medal-disc { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 20px; background: radial-gradient(circle at 35% 30%, #fff3b0, #ffc800 45%, #e09600 100%); box-shadow: 0 3px 0 #b77900, inset 0 0 0 3px rgba(255, 255, 255, .45); }
+.medal.big { width: 72px; height: 92px; }
+.medal.big .medal-rib { width: 44px; height: 38px; }
+.medal.big .medal-disc { width: 66px; height: 66px; font-size: 30px; }
+.medal.locked .medal-rib { background: #d1d5db; }
+.medal.locked .medal-disc { background: #e5e7eb; box-shadow: 0 3px 0 #c7ccd3; font-size: 16px; }
+.medal-award { display: flex; align-items: center; gap: 14px; text-align: left; background: var(--gold-l); border: 2px solid #ffe39a; border-radius: 18px; padding: 12px 16px; width: 100%; max-width: 460px; }
+.medal-award small { display: block; font-size: 11px; font-weight: 900; letter-spacing: .07em; color: #a16c00; }
+.medal-award b { display: block; font-size: 18px; color: var(--navy); }
+.medal-award span { display: block; font-size: 13px; font-weight: 600; color: #6b4a00; }
+.medals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.medal-item { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; border: 2px solid var(--line-2); border-radius: 16px; padding: 12px 8px; }
+.medal-item b { font-size: 13px; line-height: 1.2; }
+.medal-item small { font-size: 11px; font-weight: 700; color: var(--muted); }
+.medal-item.off b { color: var(--faint); }
+@media (min-width: 600px) { .medals { grid-template-columns: repeat(4, minmax(0, 1fr)); } .fb-robo .robo { width: var(--rw); } }
