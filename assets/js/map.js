@@ -92,7 +92,33 @@
     paper: `${shadow(24)}<rect x="-20" y="-26" width="40" height="52" rx="4" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
       <g stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"><path d="M-13 -16 h26 M-13 -8 h26 M-13 0 h26 M-13 8 h18"/></g>
       <circle cx="12" cy="17" r="9" fill="#e11d74"/><path d="M8 17 l3 3 l6 -6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`,
-    quill: `${shadow(18)}<path d="M18 -28 C-2 -22 -14 -2 -16 22 L-10 16 C-4 0 8 -14 18 -28Z" fill="#fbcfe8" stroke="#e11d74" stroke-width="2" stroke-linejoin="round"/><path d="M-16 22 L-22 28" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/><circle cx="-22" cy="28" r="3" fill="#1f2937"/>`
+    quill: `${shadow(18)}<path d="M18 -28 C-2 -22 -14 -2 -16 22 L-10 16 C-4 0 8 -14 18 -28Z" fill="#fbcfe8" stroke="#e11d74" stroke-width="2" stroke-linejoin="round"/><path d="M-16 22 L-22 28" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/><circle cx="-22" cy="28" r="3" fill="#1f2937"/>`,
+    /* ---- Graduação ---- */
+    gear: `<g fill="#94a3b8"><circle r="17"/>${[0,45,90,135,180,225,270,315].map(a => `<rect x="-5" y="-25" width="10" height="12" rx="2" transform="rotate(${a})"/>`).join('')}</g><circle r="7" fill="#e2e8f0"/>`,
+    helmet: `${shadow(26)}<path d="M-26 10 a26 24 0 0 1 52 0Z" fill="#ffb800"/><rect x="-30" y="8" width="60" height="7" rx="3" fill="#e09600"/><path d="M-4 -14 h8 v24 h-8Z" fill="#ffd43b"/>`,
+    bridge: `<path d="M-32 14 h64" stroke="#475569" stroke-width="5" stroke-linecap="round"/><path d="M-28 14 Q0 -26 28 14" fill="none" stroke="#ef4444" stroke-width="4"/>
+      <g stroke="#94a3b8" stroke-width="2"><path d="M-18 14 v-16 M-8 14 v-25 M0 14 v-26 M8 14 v-25 M18 14 v-16"/></g><path d="M-32 14 v12 M32 14 v12" stroke="#475569" stroke-width="5"/>`,
+    blueprint: `${shadow(28)}<rect x="-28" y="-22" width="56" height="44" rx="4" fill="#1d4ed8"/><g stroke="#bfdbfe" stroke-width="1.5" fill="none"><rect x="-18" y="-12" width="22" height="18"/><path d="M4 -12 l12 9 v15 h-12"/><path d="M-20 14 h40" stroke-dasharray="3 3"/></g>`,
+    laptop: `${shadow(30)}<rect x="-24" y="-22" width="48" height="32" rx="4" fill="#1f2937"/><rect x="-20" y="-18" width="40" height="24" rx="2" fill="#0f172a"/>
+      <text x="0" y="-1" text-anchor="middle" font-size="12" font-weight="900" fill="#4ade80" font-family="monospace">&lt;/&gt;</text><path d="M-30 10 h60 l-4 8 h-52Z" fill="#94a3b8"/>`,
+    flow: `<rect x="-14" y="-30" width="28" height="12" rx="6" fill="#8b5cf6"/><path d="M0 -18 v6" stroke="#64748b" stroke-width="2"/><path d="M0 -12 L14 0 L0 12 L-14 0Z" fill="#ffb800"/>
+      <path d="M0 12 v6" stroke="#64748b" stroke-width="2"/><rect x="-14" y="18" width="28" height="12" rx="2" fill="#2f80ed"/>`,
+    bug: `${shadow(18)}<g stroke="#1f2937" stroke-width="2.5" stroke-linecap="round"><path d="M-12 -6 l-9 -5 M-12 2 h-10 M-12 10 l-9 5 M12 -6 l9 -5 M12 2 h10 M12 10 l9 5 M-4 -18 l-4 -6 M4 -18 l4 -6"/></g>
+      <ellipse cy="2" rx="13" ry="17" fill="#ef4444"/><circle cy="-15" r="7" fill="#1f2937"/><path d="M0 -14 v32" stroke="#7f1d1d" stroke-width="2"/><circle cx="-5" cy="0" r="2.5" fill="#1f2937"/><circle cx="5" cy="8" r="2.5" fill="#1f2937"/>`,
+    brackets: `${shadow(22)}<rect x="-24" y="-20" width="48" height="40" rx="8" fill="#0f172a"/><text x="0" y="7" text-anchor="middle" font-size="20" font-weight="900" fill="#ffb800" font-family="monospace">{ }</text>`,
+    compass: `<g stroke="#475569" stroke-width="4" stroke-linecap="round"><path d="M0 -24 L-14 22 M0 -24 L14 22"/></g><circle cy="-24" r="6" fill="#0ea5e9"/><path d="M-20 12 Q0 22 20 12" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-dasharray="3 3"/>`,
+    cube: `${shadow(24)}<path d="M0 -26 L24 -13 L0 0 L-24 -13Z" fill="#bae6fd"/><path d="M-24 -13 L0 0 V26 L-24 13Z" fill="#38bdf8"/><path d="M24 -13 L0 0 V26 L24 13Z" fill="#0284c7"/>`,
+    chip: `<rect x="-20" y="-20" width="40" height="40" rx="5" fill="#1f2937"/><rect x="-11" y="-11" width="22" height="22" rx="3" fill="#16a34a"/>
+      <g stroke="#94a3b8" stroke-width="3"><path d="M-12 -20 v-7 M0 -20 v-7 M12 -20 v-7 M-12 20 v7 M0 20 v7 M12 20 v7 M-20 -12 h-7 M-20 0 h-7 M-20 12 h-7 M20 -12 h7 M20 0 h7 M20 12 h7"/></g>`,
+    ram: `${shadow(30)}<rect x="-32" y="-12" width="64" height="22" rx="3" fill="#15803d"/><g fill="#1f2937"><rect x="-26" y="-8" width="10" height="12"/><rect x="-12" y="-8" width="10" height="12"/><rect x="2" y="-8" width="10" height="12"/><rect x="16" y="-8" width="10" height="12"/></g>
+      <g fill="#ffb800">${[-28,-22,-16,-10,-4,2,8,14,20,26].map(x => `<rect x="${x}" y="10" width="3" height="5"/>`).join('')}</g>`,
+    monitor: `${shadow(24)}<rect x="-28" y="-24" width="56" height="36" rx="4" fill="#1f2937"/><rect x="-24" y="-20" width="48" height="28" rx="2" fill="#38bdf8"/><path d="M-6 12 h12 l3 10 h-18Z" fill="#64748b"/>
+      <path d="M-18 -10 h20 M-18 -4 h28 M-18 2 h14" stroke="#e0f2fe" stroke-width="2.5" stroke-linecap="round"/>`,
+    rocket: `<path d="M0 -30 C12 -18 12 4 8 14 h-16 C-12 4 -12 -18 0 -30Z" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/><circle cy="-10" r="5" fill="#38bdf8"/>
+      <path d="M-8 6 l-10 12 h10Z M8 6 l10 12 h-10Z" fill="#ef4444"/><path d="M-5 16 Q0 32 5 16Z" fill="#ffb800"/>`,
+    coin: `${shadow(20)}<ellipse cy="6" rx="18" ry="7" fill="#e09600"/><rect x="-18" y="-6" width="36" height="12" fill="#e09600"/><ellipse cy="-6" rx="18" ry="7" fill="#ffd43b"/><text y="-3" text-anchor="middle" font-size="9" font-weight="900" fill="#92400e" font-family="Nunito, sans-serif">R$</text>`,
+    bulb: `<circle cy="-8" r="16" fill="#ffd43b"/><rect x="-7" y="7" width="14" height="10" rx="2" fill="#94a3b8"/><path d="M-4 -10 l4 6 l4 -6" stroke="#e09600" stroke-width="2" fill="none"/>
+      <g stroke="#ffb800" stroke-width="3" stroke-linecap="round"><path d="M-26 -8 h-5 M26 -8 h5 M-18 -26 l-4 -4 M18 -26 l4 -4"/></g>`
   };
   const THEMES = {
     sus: ['clinic', 'law', 'people', 'heart'],
@@ -102,7 +128,13 @@
     matematica: ['calc', 'graph', 'ruler', 'pi'],
     natureza: ['flask', 'plant', 'atom', 'planet'],
     humanas: ['globe', 'column', 'mapa', 'hourglass'],
-    redacao: ['paper', 'quill', 'books', 'bubble']
+    redacao: ['paper', 'quill', 'books', 'bubble'],
+    engenharia: ['gear', 'helmet', 'bridge', 'blueprint'],
+    codigo: ['laptop', 'flow', 'bug', 'brackets'],
+    comunidade: ['people', 'house', 'heart', 'clipboard'],
+    desenho: ['compass', 'cube', 'ruler', 'blueprint'],
+    hardware: ['chip', 'monitor', 'ram', 'gear'],
+    negocios: ['rocket', 'coin', 'graph', 'bulb']
   };
 
   function rng(seed) { let s = seed * 9301 + 49297; return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; }; }

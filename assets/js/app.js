@@ -11,10 +11,11 @@ const PRODUCTS = [
     listaSub: 'Escolha o concurso que você vai prestar.', listaBreve: ['Novos concursos em breve', 'Estamos preparando as próximas trilhas a partir dos editais publicados.'], rotulo: 'CONCURSO' },
   { id: 'encceja', nome: 'ENCCEJA', ico: '📚', robo: 'revisao', desc: 'Conclua o ensino médio com aulas curtas, questões e redação.', ativo: true,
     listaSub: 'Escolha a edição do exame.', listaBreve: ['Ensino Fundamental em breve', 'A trilha do Encceja Ensino Fundamental está sendo preparada.'], rotulo: 'EXAME' },
+  { id: 'graduacao', nome: 'Graduação', ico: '🎓', robo: 'graduacao', desc: 'Aulas curtas e exercícios para cada disciplina do seu curso.', ativo: true, rotulo: 'CURSO' },
   { id: 'enem', nome: 'ENEM', ico: '📝', robo: 'estudando', desc: 'Todas as áreas do ENEM, com foco no que mais cai.', ativo: false },
-  { id: 'faetec', nome: 'Faetec', ico: '🛠️', robo: 'atencao', desc: 'Preparação para o processo seletivo da FAETEC.', ativo: false },
-  { id: 'graduacao', nome: 'Graduação', ico: '🎓', robo: 'graduacao', desc: 'Reforço nas disciplinas da faculdade.', ativo: false }
+  { id: 'faetec', nome: 'Faetec', ico: '🛠️', robo: 'atencao', desc: 'Preparação para o processo seletivo da FAETEC.', ativo: false }
 ];
+const CURSOS_G = window.APROVAE_CURSOS || {};
 const productOf = c => PRODUCTS.find(p => p.id === ((c && c.produto) || 'concursos'));
 // Planos premium. Quando houver link de pagamento (Mercado Pago, Stripe, Hotmart...), preencha "checkout".
 const PLANS = [
@@ -107,7 +108,7 @@ function confetti() {
 let R = 'inicio';
 function readRoute() {
   const h = (location.hash || '').replace('#', '');
-  R = PRODUCTS.some(p => p.ativo && p.id === h) ? 'list:' + h : CONCURSOS[h] ? h : 'inicio';
+  R = PRODUCTS.some(p => p.ativo && p.id === h) ? 'list:' + h : CURSOS_G[h] ? 'curso:' + h : CONCURSOS[h] ? h : 'inicio';
 }
 function go(h) { if (location.hash === '#' + h) { readRoute(); render(); } else location.hash = h; window.scrollTo(0, 0); }
 
@@ -150,6 +151,7 @@ const turnoTxt = () => cargo().turnoTxt || ('Turno da ' + cargo().turno);
 const provaTxt = () => K.prova ? 'Prova em ' + fmtDate(K.prova) : 'Prova: ' + (K.provaTexto || 'data a definir');
 const cdNum = () => { const d = daysTo(K.prova); return d === null ? '<div class="cd-num tbd"><b>?</b><small>DATA</small></div>' : `<div class="cd-num"><b>${d}</b><small>DIAS</small></div>`; };
 const LX = () => K.aulaLabel ? { n: 'aula', N: 'Aula', cards: 'slides da aula' } : { n: 'lição', N: 'Lição', cards: 'cartões de lição' };
+const backRoute = () => K.curso || productOf(K).id;
 const guiaNome = () => (K.guia && K.guia.nav) || 'Edital';
 
 function addXP(n) {
@@ -181,7 +183,8 @@ function render() {
   $layer.innerHTML = '';
   document.body.className = '';
   if (R === 'inicio') return renderLanding();
-  if (R.startsWith('list:')) return renderLista(R.slice(5));
+  if (R.startsWith('list:')) return R === 'list:graduacao' ? renderCursos() : renderLista(R.slice(5));
+  if (R.startsWith('curso:')) return renderCurso(R.slice(6));
   openConcurso(R);
   document.title = 'Aprovaê+Concursos — ' + K.nome;
   if (!S.onb) return renderOnb();
@@ -275,6 +278,58 @@ function renderLista(pid) {
   </div>`;
 }
 
+/* ---------- GRADUAÇÃO: cursos e períodos ---------- */
+const subHead = back => `<header class="sub-head">
+      <a href="#${back}" class="back-link" aria-label="Voltar">‹</a>
+      <a href="#inicio"><img src="assets/img/logo-aprovae.webp?v=2" alt="Aprovaê" class="sub-logo" width="180" height="54"></a>
+    </header>`;
+function trailProgress(id) {
+  const c = CONCURSOS[id]; const saved = store.get(keyOf(id));
+  if (!c) return null;
+  const total = c.units.reduce((t, u) => t + u.fases.length + 1, 0);
+  const done = saved && saved.done ? Object.keys(saved.done).length : 0;
+  return { started: !!(saved && saved.onb), pct: Math.round(done / total * 100), xp: (saved && saved.xp) || 0 };
+}
+function renderCursos() {
+  document.title = 'Aprovaê+Graduação';
+  document.body.className = 'page-landing';
+  const list = Object.values(CURSOS_G).map(c => {
+    const disp = Object.keys(c.periodos).length;
+    return `<article class="contest">
+      <div class="contest-robo">${mascot(110, c.mascot || 'notebook', { decorative: true })}</div>
+      <div class="contest-top"><span class="tag tag-navy">Graduação</span><span class="tag tag-gold">${c.totalPeriodos} períodos</span></div>
+      <h2>${c.ico} ${c.nome}</h2>
+      <p class="contest-sub">${c.desc}</p>
+      <ul class="contest-meta"><li>📚 ${plural(disp, 'período disponível', 'períodos disponíveis')}</li><li>🧩 Uma unidade para cada disciplina</li></ul>
+      <button class="btn btn-green" onclick="AP.go('${c.id}')">Ver períodos</button>
+    </article>`;
+  }).join('');
+  $app.innerHTML = `<div class="landing">${subHead('inicio')}
+    <div class="sub-title"><h1>${wordmark('Graduação')}</h1><p>Escolha o seu curso.</p></div>
+    <section class="contests">${list}
+      <div class="contest contest-soon">${mascot(84, 'graduacao')}<div><b>Novos cursos em breve</b><p>Estamos montando as trilhas de outros cursos de graduação.</p></div></div>
+    </section></div>`;
+}
+function renderCurso(id) {
+  const c = CURSOS_G[id];
+  document.title = 'Aprovaê+Graduação — ' + c.nome;
+  document.body.className = 'page-landing';
+  const tiles = Array.from({ length: c.totalPeriodos }, (_, i) => {
+    const n = i + 1; const tid = c.periodos[n]; const k = tid && CONCURSOS[tid];
+    if (!k) return `<div class="period off" aria-disabled="true"><b>${n}º</b><small>período</small><span class="soon">Em breve</span></div>`;
+    const pr = trailProgress(tid);
+    return `<button class="period on" onclick="AP.go('${tid}')"><b>${n}º</b><small>período</small>
+      <span class="period-info">${plural(k.units.length, 'disciplina', 'disciplinas')}</span>
+      <span class="period-bar"><i style="width:${pr.pct}%"></i></span><span class="period-cta">${pr.started ? `Continuar • ${pr.pct}%` : 'Começar'}</span></button>`;
+  }).join('');
+  const first = c.periodos[1] && CONCURSOS[c.periodos[1]];
+  $app.innerHTML = `<div class="landing">${subHead('graduacao')}
+    <div class="sub-title with-robo"><div><h1>${c.ico} ${c.nome}</h1><p>Escolha o período. Vamos liberando os próximos aos poucos.</p></div>${mascot(110, c.mascot || 'notebook', { decorative: true })}</div>
+    <section class="periods">${tiles}</section>
+    ${first ? `<div class="card period-subjects"><small class="eyebrow">DISCIPLINAS DO 1º PERÍODO</small><div class="subj-list">${first.units.map(u => `<span style="--c:${u.c}">${u.emoji} ${u.title}</span>`).join('')}</div></div>` : ''}
+  </div>`;
+}
+
 /* ---------- ONBOARDING ---------- */
 function renderOnb() {
   document.body.className = 'page-focus';
@@ -309,7 +364,7 @@ function renderOnb() {
   }
   $app.innerHTML = `<div class="focus">
     <div class="focus-top"><div class="focus-top-in">
-      ${s > 0 ? `<button class="x-btn" onclick="AP.onb(${s - 1})" aria-label="Voltar">‹</button>` : `<button class="x-btn" onclick="AP.go('${productOf(K).id}')" aria-label="Voltar">‹</button>`}
+      ${s > 0 ? `<button class="x-btn" onclick="AP.onb(${s - 1})" aria-label="Voltar">‹</button>` : `<button class="x-btn" onclick="AP.go('${backRoute()}')" aria-label="Voltar">‹</button>`}
       <div class="bar"><i style="width:${singleCargo() ? (s === 0 ? 50 : 100) : (s + 1) / 3 * 100}%"></i></div>
     </div></div>
     <div class="focus-body">${body}</div>
@@ -340,7 +395,7 @@ function renderShell() {
         <button class="side-item ${UI.tab === 'edital' ? 'on' : ''}" onclick="AP.tab('edital')"><span class="nav-ico">📋</span><span>${guiaNome()}</span></button></nav>
       <div class="side-foot">
         <div class="side-contest"><small>SEU ${productOf(K).rotulo || 'CONCURSO'}</small><b>${K.nome}</b><span>${cargo().emoji} ${cargo().curto}</span></div>
-        <a href="#${productOf(K).id}" class="side-link">Trocar de ${(productOf(K).rotulo || 'CONCURSO').toLowerCase()}</a>
+        <a href="#${backRoute()}" class="side-link">Trocar de ${(productOf(K).rotulo || 'CONCURSO').toLowerCase()}</a>
       </div>
     </aside>
     <div class="col-main">
@@ -373,7 +428,7 @@ function railWidgets() {
        <p class="muted small">Corte do edital: ${K.corte} pontos.</p>`;
   return `<div class="rail-stats">${statChips()}</div>
     <div class="card">
-      <div class="countdown">${cdNum()}<div><b>${provaTxt()}</b><p class="muted small">${turnoTxt()}</p></div></div>
+      ${K.semProva ? `<b>${K.nome}</b>` : `<div class="countdown">${cdNum()}<div><b>${provaTxt()}</b><p class="muted small">${turnoTxt()}</p></div></div>`}
       <div class="bar-row"><div class="bar thin"><i style="width:${tp}%"></i></div><small>${Math.round(tp)}% da trilha</small></div>
     </div>
     <div class="card">
@@ -394,7 +449,7 @@ function welcomeCard() {
   let pose = 'principal', title, text, cls = '';
   if (!S.xp && !Object.keys(S.done).length) {
     title = 'Bem-vindo(a) ao Aprovaê+!';
-    text = `Eu vou te acompanhar em cada fase até a prova. Comece pela primeira fase da trilha: é rapidinho!`;
+    text = K.semProva ? `Eu vou te acompanhar em cada disciplina do período. Comece pela primeira fase da trilha: é rapidinho!` : `Eu vou te acompanhar em cada fase até a prova. Comece pela primeira fase da trilha: é rapidinho!`;
   } else if (UI.away !== null && UI.away >= 2) {
     pose = 'atencao'; cls = 'motivate';
     title = `Que bom te ver de volta! 💛`;
@@ -434,7 +489,7 @@ function viewHome() {
     return `<section class="unit">
       <div class="unit-banner" style="--c:${u.c};--cd:${u.cd}">
         <div class="unit-robo">${mascot(104, unitRobo(u), { decorative: true, enter: false })}</div>
-        <small>UNIDADE ${ui + 1} • ${a.curto.toUpperCase()} • ${a.pts ? `${a.pts} PT${a.pts > 1 ? 'S' : ''} POR QUESTÃO` : u.area === 'red' ? 'NOTA DE 0 A 10' : `${a.q} QUESTÕES NA PROVA`}</small>
+        <small>UNIDADE ${ui + 1} • ${a.curto.toUpperCase()} • ${a.pts ? `${a.pts} PT${a.pts > 1 ? 'S' : ''} POR QUESTÃO` : a.banner ? a.banner : u.area === 'red' ? 'NOTA DE 0 A 10' : `${a.q} QUESTÕES NA PROVA`}</small>
         <h2>${u.title}</h2>
         <p>${u.sub}</p>
         <div class="unit-prog"><div class="bar white"><i style="width:${doneU / nodes.length * 100}%"></i></div><b>${doneU}/${nodes.length}</b></div>
@@ -448,11 +503,12 @@ function viewHome() {
       <div><small class="eyebrow">APROVAÊ+${productOf(K).nome.toUpperCase()}</small><h1>${K.nome}</h1><p class="muted">${cargo().nome}</p></div>
       <button class="chip" onclick="AP.tab('edital')">📋 ${guiaNome()}</button>
     </div>
-    <div class="card countdown-card">
+    ${K.semProva ? `<div class="card"><div class="row-between"><b>Progresso do período</b><span class="muted small">${plural(K.units.length, 'disciplina', 'disciplinas')}</span></div>
+      <div class="bar-row"><div class="bar thin"><i style="width:${doneN / all.length * 100}%"></i></div><small>${Math.round(doneN / all.length * 100)}% da trilha</small></div></div>` : `<div class="card countdown-card">
       <div class="countdown">${cdNum()}
       <div class="grow"><b>${provaTxt()}</b><p class="muted small">${turnoTxt()}</p>
       <div class="bar-row"><div class="bar thin"><i style="width:${doneN / all.length * 100}%"></i></div><small>${Math.round(doneN / all.length * 100)}% da trilha</small></div></div></div>
-    </div>
+    </div>`}
     ${units}
     <div class="trail-end">${mascot(80, 'estudando', { decorative: true })}<p>Quer estudar um assunto fora da ordem? Use a aba <b>Tópicos</b>.</p></div>
   </div>`;
@@ -485,6 +541,87 @@ function renderSheet() {
     </div>`;
 }
 
+/* ---------- SIMULAÇÕES ---------- */
+const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const ELEM = [null, ['H', 'Hidrogênio', 1], ['He', 'Hélio', 4], ['Li', 'Lítio', 7], ['Be', 'Berílio', 9], ['B', 'Boro', 11], ['C', 'Carbono', 12], ['N', 'Nitrogênio', 14], ['O', 'Oxigênio', 16], ['F', 'Flúor', 19], ['Ne', 'Neônio', 20],
+  ['Na', 'Sódio', 23], ['Mg', 'Magnésio', 24], ['Al', 'Alumínio', 27], ['Si', 'Silício', 28], ['P', 'Fósforo', 31], ['S', 'Enxofre', 32], ['Cl', 'Cloro', 35], ['Ar', 'Argônio', 40], ['K', 'Potássio', 39], ['Ca', 'Cálcio', 40]];
+const BIT_GOALS = [5, 42, 100, 200, 255];
+const GATES = { E: (a, b) => a && b, OU: (a, b) => a || b, NAO: a => !a, XOU: (a, b) => a !== b };
+const GATE_NOME = { E: 'E (AND)', OU: 'OU (OR)', NAO: 'NÃO (NOT)', XOU: 'XOU (XOR)' };
+function simHtml(card, st) {
+  if (card.kind === 'trace') {
+    st.p = st.p || 0; const step = card.steps[st.p];
+    let out = ''; for (let i = 0; i <= st.p; i++) if (card.steps[i].out != null) out = card.steps[i].out;
+    const vars = Object.entries(step.v || {});
+    return `<div class="trace">
+      <pre class="code trace-code">${card.code.map((ln, i) => `<span class="ln ${i === step.l ? 'cur' : ''}"><i>${i + 1}</i>${esc(ln) || ' '}</span>`).join('')}</pre>
+      <div class="trace-side">
+        <div class="vars"><small>VARIÁVEIS</small>${vars.length ? `<table>${vars.map(([k, v]) => `<tr><td>${esc(k)}</td><td><b>${esc(v)}</b></td></tr>`).join('')}</table>` : '<p class="muted small">—</p>'}</div>
+        <div class="console"><small>SAÍDA</small><code>${out ? esc(out) : '&nbsp;'}</code></div>
+      </div>
+      <p class="trace-note">💬 ${step.note || ''}</p>
+      <div class="sim-ctrl"><button class="chip" ${st.p ? '' : 'disabled'} onclick="AP.sim('prev')">‹ Voltar</button><b class="muted small">Passo ${st.p + 1} de ${card.steps.length}</b>
+        ${st.p < card.steps.length - 1 ? '<button class="chip on" onclick="AP.sim(\'next\')">Próximo ›</button>' : '<button class="chip" onclick="AP.sim(\'reset\')">↺ Reiniciar</button>'}</div>
+    </div>`;
+  }
+  if (card.kind === 'bits') {
+    st.v = st.v || 0; st.g = st.g || 0; const goal = BIT_GOALS[st.g % BIT_GOALS.length];
+    const bits = [128, 64, 32, 16, 8, 4, 2, 1];
+    return `<div class="bits">
+      <div class="bit-row">${bits.map(w => { const on = (st.v & w) !== 0; return `<button class="bit ${on ? 'on' : ''}" onclick="AP.sim('bit', ${w})" aria-pressed="${on}"><b>${on ? 1 : 0}</b><small>${w}</small></button>`; }).join('')}</div>
+      <div class="bit-out"><div><small>DECIMAL</small><b>${st.v}</b></div><div><small>BINÁRIO</small><b>${st.v.toString(2).padStart(8, '0')}</b></div><div><small>HEXA</small><b>${st.v.toString(16).toUpperCase().padStart(2, '0')}</b></div></div>
+      <div class="bit-goal ${st.v === goal ? 'ok' : ''}"><span>${st.v === goal ? `✅ Isso! ${goal} em binário é ${goal.toString(2)}.` : `🎯 Desafio: ligue os bits para formar o número <b>${goal}</b>.`}</span>
+        <button class="chip" onclick="AP.sim('goal')">Outro desafio</button></div>
+    </div>`;
+  }
+  if (card.kind === 'gate') {
+    st.g = st.g || 'E'; st.a = !!st.a; st.b = !!st.b;
+    const f = GATES[st.g]; const un = st.g === 'NAO'; const out = un ? f(st.a) : f(st.a, st.b);
+    const rows = un ? [[0], [1]] : [[0, 0], [0, 1], [1, 0], [1, 1]];
+    const cur = un ? [+st.a] : [+st.a, +st.b];
+    return `<div class="gate">
+      <div class="chips gate-tabs">${Object.keys(GATES).map(g => `<button class="chip ${st.g === g ? 'on' : ''}" onclick="AP.sim('gate', '${g}')">${GATE_NOME[g]}</button>`).join('')}</div>
+      <div class="gate-board">
+        <div class="gate-in"><button class="sw ${st.a ? 'on' : ''}" onclick="AP.sim('a')">A = ${+st.a}</button>${un ? '' : `<button class="sw ${st.b ? 'on' : ''}" onclick="AP.sim('b')">B = ${+st.b}</button>`}</div>
+        <div class="gate-box">${GATE_NOME[st.g].split(' ')[0]}</div>
+        <div class="lamp ${out ? 'on' : ''}"><span>💡</span><b>Saída = ${+out}</b></div>
+      </div>
+      <table class="truth"><tr>${un ? '<th>A</th>' : '<th>A</th><th>B</th>'}<th>Saída</th></tr>
+        ${rows.map(r => `<tr class="${r.join() === cur.join() ? 'cur' : ''}">${r.map(x => `<td>${x}</td>`).join('')}<td><b>${+(un ? f(!!r[0]) : f(!!r[0], !!r[1]))}</b></td></tr>`).join('')}</table>
+    </div>`;
+  }
+  if (card.kind === 'atomo') {
+    if (st.z == null) { st.z = 6; st.n = 6; st.e = 6; }
+    const [sym, nome, aComum] = ELEM[st.z]; const A = st.z + st.n; const carga = st.z - st.e;
+    const ion = carga === 0 ? 'Átomo neutro' : carga > 0 ? `Cátion (carga +${carga})` : `Ânion (carga ${carga})`;
+    const shells = [2, 8, 8, 8]; let left = st.e; const orb = [];
+    shells.forEach((cap, i) => { const k = Math.min(cap, left); left -= k; if (k > 0) orb.push([i, k]); });
+    const svg = `<svg viewBox="-110 -110 220 220" class="atom-svg" aria-hidden="true">${orb.map(([i]) => `<circle r="${42 + i * 22}" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4 5"/>`).join('')}
+      <circle r="24" fill="#fde68a" stroke="#f59e0b" stroke-width="2"/><text y="-2" text-anchor="middle" font-size="10" font-weight="900" fill="#92400e">${st.z}p⁺</text><text y="11" text-anchor="middle" font-size="10" font-weight="900" fill="#475569">${st.n}n</text>
+      ${orb.map(([i, k]) => Array.from({ length: k }, (_, j) => { const ang = j / k * Math.PI * 2 + i; const r = 42 + i * 22; return `<circle cx="${(Math.cos(ang) * r).toFixed(1)}" cy="${(Math.sin(ang) * r).toFixed(1)}" r="5" fill="#2f80ed"/>`; }).join('')).join('')}</svg>`;
+    const ctl = (k, label, min, max) => `<div class="ctl"><span>${label}</span><button class="chip" onclick="AP.sim('dec', '${k}')" ${st[k] <= min ? 'disabled' : ''}>−</button><b>${st[k]}</b><button class="chip" onclick="AP.sim('inc', '${k}')" ${st[k] >= max ? 'disabled' : ''}>+</button></div>`;
+    return `<div class="atomo">
+      <div class="atom-view">${svg}<div class="elem-card"><small>Z = ${st.z}</small><b>${sym}</b><span>${nome}</span><small>A = ${A}</small></div></div>
+      <div class="atom-ctl">${ctl('z', 'Prótons', 1, 20)}${ctl('n', 'Nêutrons', 0, 30)}${ctl('e', 'Elétrons', 0, 26)}</div>
+      <div class="atom-info"><span class="tag ${carga === 0 ? 'tag-green' : 'tag-gold'}">${ion}</span><span class="tag ${A === aComum ? 'tag-green' : ''}">${A === aComum ? 'Isótopo mais comum' : `Isótopo (o mais comum tem A = ${aComum})`}</span></div>
+      <p class="muted small">Mude os prótons e veja o elemento mudar. Mude os elétrons para formar íons e os nêutrons para formar isótopos.</p>
+    </div>`;
+  }
+  if (card.kind === 'calc') {
+    const f = (id, label, val, unit) => `<label class="cfield"><span>${label}</span><span class="cinput"><input id="c-${id}" type="number" inputmode="decimal" value="${val}" oninput="AP.calc('${card.calc}')"><em>${unit}</em></span></label>`;
+    const fields = {
+      velocidade: f('kmh', 'Velocidade', 72, 'km/h'),
+      escala: f('des', 'Medida no desenho', 8, 'cm') + f('esc', 'Escala 1 :', 50, ''),
+      equilibrio: f('cf', 'Custos fixos (mês)', 6000, 'R$') + f('pr', 'Preço de venda', 50, 'R$') + f('cv', 'Custo variável unitário', 20, 'R$')
+    }[card.calc];
+    setTimeout(() => AP.calc(card.calc), 0);
+    return `<div class="calc"><div class="cfields">${fields}</div><div class="calc-out" id="calcOut"></div></div>`;
+  }
+  return '';
+}
+const num = id => { const el = document.getElementById('c-' + id); const v = el ? parseFloat(String(el.value).replace(',', '.')) : NaN; return isNaN(v) ? 0 : v; };
+const fmtN = (v, d = 2) => Number(v).toLocaleString('pt-BR', { maximumFractionDigits: d });
+
 /* ---------- LIÇÃO ---------- */
 function draftMeta(t) {
   const words = (t.trim().match(/\S+/g) || []).length;
@@ -513,6 +650,9 @@ function renderLesson() {
   } else if (card.t === 'compare') {
     const col = (h, items, cls) => `<div class="cmp ${cls}"><b>${h}</b><ul>${items.map(it => `<li>${it}</li>`).join('')}</ul></div>`;
     inner = `<div class="pop"><small class="eyebrow">COMPARE</small><h2 class="lesson-title">${card.title}</h2><div class="cmp-grid">${col(card.lh, card.li, 'cmp-a')}${col(card.rh, card.ri, 'cmp-b')}</div></div>`;
+  } else if (card.t === 'sim') {
+    if (!L.sim || L.sim.i !== L.i) L.sim = { i: L.i };
+    inner = `<div class="pop"><small class="eyebrow">🧪 SIMULAÇÃO</small><h2 class="lesson-title">${card.title}</h2><div id="sim" class="sim">${simHtml(card, L.sim)}</div></div>`;
   } else if (card.t === 'write') {
     const key = L.fid + ':' + L.i; const txt = S.drafts[key] || ''; const chk = S.drafts[key + ':chk'] || [];
     inner = `<div class="pop write">
@@ -784,7 +924,7 @@ function viewEdital() {
   const g = K.guia || {};
   const row = ([l, v]) => `<div class="kv"><span>${l}</span><b>${v}</b></div>`;
   const destaques = (g.destaques || []).map((d, i) => `<div class="hero-card ${i ? 'blue' : 'navy'}"><small>${d.rotulo}</small><h2>${d.valor}</h2><p>${d.texto}</p></div>`).join('');
-  const areas = Object.values(K.areas).map(a => `<div class="area-line"><span style="background:${a.cor}"></span><div class="grow"><b>${a.nome}</b><small class="muted">${a.pts ? `${a.q} questões × ${a.pts} pt` : a.q > 1 ? `${a.q} questões` : 'texto dissertativo-argumentativo'}</small></div><b style="color:${a.cor}">${a.max != null ? a.max : a.q > 1 ? a.q : '0–10'}</b></div>`).join('');
+  const areas = Object.values(K.areas).map(a => `<div class="area-line"><span style="background:${a.cor}"></span><div class="grow"><b>${a.nome}</b><small class="muted">${a.pts ? `${a.q} questões × ${a.pts} pt` : a.info ? a.info : a.q > 1 ? `${a.q} questões` : 'texto dissertativo-argumentativo'}</small></div><b style="color:${a.cor}">${a.max != null ? a.max : a.info ? '' : a.q > 1 ? a.q : '0–10'}</b></div>`).join('');
   return `<div class="page fade narrow">
     <button class="link-btn" onclick="AP.tab('home')">‹ Voltar para a trilha</button>
     <div class="page-title with-robo"><div><h1>${g.titulo || 'Edital em 1 minuto'}</h1><p class="muted">${g.sub || ''}</p></div>${mascot(104, 'legislacao', { decorative: true })}</div>
@@ -795,7 +935,7 @@ function viewEdital() {
       <div class="stack">${areas}${K.total ? `<div class="row-between total"><b>Total</b><b>${K.total} pts</b></div>` : ''}</div>
       ${g.aprovacao ? `<div class="note gold">${g.aprovacao}</div>` : ''}</div>
     ${(g.cards || []).slice(2).map(c => `<div class="card"><small class="eyebrow">${c.titulo}</small>${c.linhas.map(row).join('')}</div>`).join('')}
-    <a class="btn btn-ghost" href="${K.editalUrl}" target="_blank" rel="noopener">📄 ${g.linkTexto || 'Abrir edital completo'}</a>
+    ${K.editalUrl ? `<a class="btn btn-ghost" href="${K.editalUrl}" target="_blank" rel="noopener">📄 ${g.linkTexto || 'Abrir edital completo'}</a>` : ''}
     ${(K.documentos || []).length ? `<div class="card"><small class="eyebrow">DOCUMENTOS OFICIAIS</small>
       <div class="docs">${K.documentos.map(d => `<a class="doc" href="${d.url}" target="_blank" rel="noopener"><span class="doc-tipo ${d.tipo === 'PDF' ? 'pdf' : d.tipo === 'SITE' ? 'site' : ''}">${d.tipo}</span><span class="doc-nome">${d.nome}</span><span class="doc-go" aria-hidden="true">↗</span></a>`).join('')}</div>
       ${K.documentos.some(d => d.tipo === 'DOC') ? '<p class="muted small">Os anexos (.doc) abrem no Word ou no Google Docs. Preencha, assine e envie conforme as instruções do edital.</p>' : ''}</div>` : ''}
@@ -851,6 +991,32 @@ window.AP = {
       ${mascot(110, 'atencao', { decorative: true })}<h3 id="buy-t">Plano ${pl.nome} • ${brl(pl.preco)}</h3>
       <p class="muted">O pagamento on-line está quase pronto. Assim que for liberado, você poderá assinar por aqui.</p>
       <div class="stack"><button class="btn btn-navy" onclick="AP.closeSheet()">Entendi</button></div></div>`;
+  },
+  sim(action, arg) {
+    const L = UI.lesson; if (!L || !L.sim) return; const st = L.sim; const card = FASES[L.fid].f.lesson[L.i];
+    if (action === 'next') st.p = Math.min(card.steps.length - 1, (st.p || 0) + 1);
+    if (action === 'prev') st.p = Math.max(0, (st.p || 0) - 1);
+    if (action === 'reset') st.p = 0;
+    if (action === 'bit') st.v = (st.v || 0) ^ arg;
+    if (action === 'goal') { st.g = (st.g || 0) + 1; st.v = 0; }
+    if (action === 'gate') st.g = arg;
+    if (action === 'a') st.a = !st.a;
+    if (action === 'b') st.b = !st.b;
+    if (action === 'inc' || action === 'dec') {
+      const lim = { z: [1, 20], n: [0, 30], e: [0, 26] }[arg]; st[arg] = Math.min(lim[1], Math.max(lim[0], st[arg] + (action === 'inc' ? 1 : -1)));
+      if (arg === 'z') { st.e = st.z; st.n = ELEM[st.z][2] - st.z; }
+    }
+    const el = document.getElementById('sim'); if (el) el.innerHTML = simHtml(card, st);
+  },
+  calc(kind) {
+    const out = document.getElementById('calcOut'); if (!out) return;
+    if (kind === 'velocidade') { const v = num('kmh'); out.innerHTML = `<b>${fmtN(v / 3.6)} m/s</b><span>${fmtN(v)} km/h ÷ 3,6</span>`; }
+    if (kind === 'escala') { const d = num('des'), e = num('esc'); const realCm = d * e; out.innerHTML = `<b>${fmtN(realCm / 100)} m</b><span>${fmtN(d)} cm × ${fmtN(e, 0)} = ${fmtN(realCm)} cm na realidade</span>`; }
+    if (kind === 'equilibrio') {
+      const cf = num('cf'), pr = num('pr'), cv = num('cv'); const m = pr - cv;
+      out.innerHTML = m <= 0 ? '<b class="c-red">Sem equilíbrio</b><span>O preço precisa ser maior que o custo variável.</span>'
+        : `<b>${fmtN(Math.ceil(cf / m), 0)} unidades/mês</b><span>Margem: R$ ${fmtN(m)} • Receita no equilíbrio: R$ ${fmtN(Math.ceil(cf / m) * pr)}</span>`;
+    }
   },
   draft(key, v) {
     S.drafts[key] = v; const m = document.getElementById('draftMeta'); if (m) m.innerHTML = draftMeta(v);
@@ -945,12 +1111,12 @@ window.AP = {
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && $layer.innerHTML) { AP.closeSheet(); return; }
-  if (!UI || !S || !S.onb || R === 'inicio' || R.startsWith('list:')) return;
+  if (!UI || !S || !S.onb || R === 'inicio' || R.startsWith('list:') || R.startsWith('curso:')) return;
   if (UI.screen === 'quiz' && !$layer.innerHTML) {
     const z = UI.quiz;
     if (!z.checked && ['1', '2', '3', '4', 'a', 'b', 'c', 'd'].includes(e.key.toLowerCase())) { const i = '1234'.indexOf(e.key) >= 0 ? '1234'.indexOf(e.key) : 'abcd'.indexOf(e.key.toLowerCase()); AP.pick(i); }
     else if (e.key === 'Enter') { e.preventDefault(); z.checked ? AP.next() : AP.verify(); }
-  } else if (UI.screen === 'lesson' && e.key === 'Enter' && !$layer.innerHTML && e.target.tagName !== 'TEXTAREA') {
+  } else if (UI.screen === 'lesson' && e.key === 'Enter' && !$layer.innerHTML && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
     const L = UI.lesson; const c = FASES[L.fid].f.lesson[L.i];
     if (!c || c.t !== 'check' || L.ans !== null) { e.preventDefault(); AP.lessonNext(); }
   }
