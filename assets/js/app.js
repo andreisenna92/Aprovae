@@ -40,9 +40,9 @@ const wordmark = (extra = '') => `<span class="wordmark">Aprova<b>ê</b>${extra 
 // Para criar uma pose nova: salve robo-NOME.webp e robo-NOME.png na pasta e registre aqui [largura, altura].
 const ROBO = {
   principal: [478, 605], joinha: [478, 605], estudando: [278, 271], notebook: [255, 251],
-  comemoracao: [235, 286], conquista: [263, 285], duvida: [237, 254], atencao: [249, 250],
-  revisao: [235, 243], planejamento: [295, 241], sus: [276, 345], saquarema: [331, 349],
-  legislacao: [317, 343], graduacao: [285, 360], campo: [292, 344]
+  comemoracao: [235, 286], conquista: [262, 285], duvida: [237, 254], atencao: [270, 273],
+  revisao: [235, 243], planejamento: [276, 241], sus: [276, 345], saquarema: [311, 349],
+  legislacao: [295, 343], graduacao: [285, 360], campo: [292, 344]
 };
 const ROBO_ALT = {
   principal: 'Robô Aprovaê+ fazendo sinal de positivo', joinha: 'Robô Aprovaê+ fazendo sinal de positivo',
@@ -61,7 +61,7 @@ function mascot(size = 96, pose = 'principal', opts = {}) {
   const W = Math.round(size * w / h);
   const cls = ['robo', opts.float ? 'robo-float' : '', opts.enter === false ? '' : 'robo-enter', opts.cls || ''].join(' ').trim();
   const alt = opts.decorative ? '' : ROBO_ALT[pose];
-  return `<picture class="${cls}" style="--rw:${W}px;--rh:${size}px"><source srcset="assets/mascote/robo-${pose}.webp" type="image/webp"><img src="assets/mascote/robo-${pose}.png" width="${W}" height="${size}" alt="${alt}" ${opts.eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" draggable="false"></picture>`;
+  return `<picture class="${cls}" style="--rw:${W}px;--rh:${size}px"><source srcset="assets/mascote/robo-${pose}.webp?v=3" type="image/webp"><img src="assets/mascote/robo-${pose}.png?v=3" width="${W}" height="${size}" alt="${alt}" ${opts.eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" draggable="false"></picture>`;
 }
 const speech = html => `<div class="speech">${html}</div>`;
 

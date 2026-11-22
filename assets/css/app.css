@@ -120,10 +120,15 @@ input { font: inherit; }
 /* ---------- mascote e fala ---------- */
 .robo { display: inline-block; flex: none; width: var(--rw); max-width: 100%; line-height: 0; }
 .robo img { width: 100%; height: auto; display: block; user-select: none; -webkit-user-drag: none; }
-.robo-enter { animation: roboIn .55s cubic-bezier(.2, 1.25, .4, 1) both; }
-@keyframes roboIn { from { opacity: 0; transform: translateY(14px) scale(.94); } to { opacity: 1; transform: none; } }
-.robo-float img { animation: roboFloat 4.2s ease-in-out .6s infinite; will-change: transform; }
-@keyframes roboFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+.robo-enter { animation: roboIn .9s cubic-bezier(.22, .61, .36, 1) both; }
+@keyframes roboIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.robo-float img { animation: roboFloat 7s cubic-bezier(.45, .05, .55, .95) 1s infinite; will-change: transform; transform-origin: 50% 90%; }
+@keyframes roboFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30% { transform: translateY(-4px) rotate(-.6deg); }
+  55% { transform: translateY(-5px) rotate(.3deg); }
+  80% { transform: translateY(-2px) rotate(.5deg); }
+}
 .speech { position: relative; background: #fff; border: 2px solid var(--line); border-radius: 16px; padding: 12px 14px; font-weight: 800; font-size: 15px; line-height: 1.35; box-shadow: 0 3px 0 var(--line); }
 .lumi-say { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
 .lumi-say .speech { flex: 1; margin-top: 8px; }
@@ -158,7 +163,7 @@ body.page-landing { background: #fff; background-image: radial-gradient(circle a
 .product.is-on { padding-right: 136px; }
 .product.is-on .product-robo .robo { filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .3)); }
 .product.is-off .product-robo { display: none; opacity: .9; filter: saturate(.75); }
-.product.is-on .product-robo img { animation: roboFloat 4.2s ease-in-out .6s infinite; }
+.product.is-on .product-robo img { animation: roboFloat 7.5s cubic-bezier(.45, .05, .55, .95) 1.4s infinite; transform-origin: 50% 90%; }
 @media (max-width: 599px) {
   .product.is-off { min-height: 0; display: grid; grid-template-columns: 36px 1fr auto; align-items: center; column-gap: 12px; row-gap: 2px; padding: 14px 16px; }
   .product.is-off .product-ico { grid-row: span 2; font-size: 26px; }
@@ -397,16 +402,16 @@ body.page-app { background: var(--bg); }
 .node.locked { background: #dfe3e8; box-shadow: 0 7px 0 #b9c0c9, 0 10px 14px -6px rgba(30, 60, 20, .35); color: #8b95a3; }
 .node.locked:active { box-shadow: 0 1px 0 #b9c0c9; }
 .node.locked .node-ico { font-size: 22px; filter: grayscale(1); opacity: .8; }
-.ring { position: absolute; inset: -9px; border-radius: 50%; border: 5px solid rgba(255,255,255,.95); opacity: .7; animation: pulse 1.6s ease-out infinite; pointer-events: none; }
+.ring { position: absolute; inset: -9px; border-radius: 50%; border: 5px solid rgba(255,255,255,.95); opacity: .7; animation: pulse 3s cubic-bezier(.25, .6, .35, 1) infinite; pointer-events: none; }
 .node.boss .ring { border-radius: 28px; }
-@keyframes pulse { from { transform: scale(.92); opacity: .8; } to { transform: scale(1.2); opacity: 0; } }
+@keyframes pulse { 0% { transform: scale(.96); opacity: .75; } 70%, 100% { transform: scale(1.16); opacity: 0; } }
 .bubble {
   position: absolute; bottom: calc(100% + 16px); left: 50%; transform: translateX(-50%); background: #fff; border: 2px solid var(--line);
   border-radius: 12px; padding: 6px 12px; font-weight: 900; font-size: 13px; color: var(--cd); white-space: nowrap; letter-spacing: .05em;
-  animation: bob 1.4s ease-in-out infinite; box-shadow: 0 3px 0 var(--line);
+  animation: bob 3.6s cubic-bezier(.45, .05, .55, .95) infinite; box-shadow: 0 3px 0 var(--line);
 }
 .bubble::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 8px solid transparent; border-top-color: #fff; margin-top: -1px; }
-@keyframes bob { 0%, 100% { margin-bottom: 0; } 50% { margin-bottom: 6px; } }
+@keyframes bob { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -4px); } }
 .node-stars { margin-top: 9px; font-size: 13px; color: var(--gold); letter-spacing: -1px; text-shadow: 0 1px 0 rgba(0, 0, 0, .15); line-height: 1; }
 .node-stars i { font-style: normal; color: rgba(255, 255, 255, .7); }
 .node-label {
