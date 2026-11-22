@@ -7,11 +7,15 @@
 
 /* ------------------------------ PRODUTOS ------------------------------ */
 const PRODUCTS = [
-  { id: 'concursos', nome: 'Concursos', ico: '🏛️', desc: 'Trilhas guiadas pelo edital do seu concurso público.', ativo: true },
-  { id: 'enem', nome: 'ENEM', ico: '📝', desc: 'Todas as áreas do ENEM, com foco no que mais cai.', ativo: false },
-  { id: 'encceja', nome: 'ENCCEJA', ico: '📚', desc: 'Conclua o ensino fundamental ou médio no seu ritmo.', ativo: false },
-  { id: 'graduacao', nome: 'Graduação', ico: '🎓', desc: 'Reforço nas disciplinas da faculdade.', ativo: false }
+  { id: 'concursos', nome: 'Concursos', ico: '🏛️', robo: 'notebook', desc: 'Trilhas guiadas pelo edital do seu concurso público.', ativo: true },
+  { id: 'enem', nome: 'ENEM', ico: '📝', robo: 'estudando', desc: 'Todas as áreas do ENEM, com foco no que mais cai.', ativo: false },
+  { id: 'encceja', nome: 'ENCCEJA', ico: '📚', robo: 'revisao', desc: 'Conclua o ensino fundamental ou médio no seu ritmo.', ativo: false },
+  { id: 'faetec', nome: 'Faetec', ico: '🛠️', robo: 'atencao', desc: 'Preparação para o processo seletivo da FAETEC.', ativo: false },
+  { id: 'graduacao', nome: 'Graduação', ico: '🎓', robo: 'graduacao', desc: 'Reforço nas disciplinas da faculdade.', ativo: false }
 ];
+// Pose do robô para cada tema de unidade (usada quando a unidade não define "mascot")
+const THEME_ROBO = { sus: 'sus', campo: 'campo', letras: 'estudando', saquarema: 'saquarema', legislacao: 'legislacao' };
+const unitRobo = u => u.mascot || THEME_ROBO[u.theme] || 'notebook';
 const CONCURSOS = window.APROVAE_CONCURSOS || {};
 
 /* ------------------------------ UTIL ------------------------------ */
@@ -31,29 +35,33 @@ const store = {
 };
 const wordmark = (extra = '') => `<span class="wordmark">Aprova<b>ê</b>${extra ? `<i>+</i><span class="wm-x">${extra}</span>` : ''}</span>`;
 
-/* ------------------------------ MASCOTE (Lumi) ------------------------------ */
-function mascot(size = 96, mood = 'happy') {
-  const mouth = mood === 'sad' ? '<path d="M43 70 q7 -6 14 0" stroke="#3b2a00" stroke-width="3.5" fill="none" stroke-linecap="round"/>'
-    : mood === 'wow' ? '<ellipse cx="50" cy="68" rx="5" ry="6" fill="#3b2a00"/>'
-    : '<path d="M40 64 q10 10 20 0" stroke="#3b2a00" stroke-width="3.5" fill="#ff8fa3" stroke-linecap="round" stroke-linejoin="round"/>';
-  const brows = mood === 'sad' ? '<path d="M32 46 l9 -4 M68 46 l-9 -4" stroke="#3b2a00" stroke-width="3" stroke-linecap="round"/>' : '';
-  return `<svg class="mascot" width="${size}" height="${Math.round(size * 1.1)}" viewBox="0 0 100 110" aria-hidden="true">
-    <ellipse cx="50" cy="107" rx="20" ry="3.5" fill="#000" opacity=".08"/>
-    ${mood !== 'sad' ? '<g stroke="#ffb800" stroke-width="4" stroke-linecap="round" opacity=".7"><path d="M8 46 h-6"/><path d="M92 46 h6"/><path d="M14 22 l-5 -4"/><path d="M86 22 l5 -4"/></g>' : ''}
-    <circle cx="50" cy="52" r="33" fill="#ffd43b"/>
-    <path d="M50 19 a33 33 0 0 1 0 66 a26 33 0 0 0 0 -66Z" fill="#f5b800" opacity=".55"/>
-    <ellipse cx="34" cy="38" rx="6" ry="9" fill="#fff" opacity=".55" transform="rotate(-25 34 38)"/>
-    <path d="M37 82 h26 l-2 6 h-22Z" fill="#f5b800"/>
-    <rect x="37" y="87" width="26" height="6" rx="3" fill="#9ca3af"/><rect x="38" y="93" width="24" height="6" rx="3" fill="#6b7280"/><rect x="43" y="99" width="14" height="5" rx="2.5" fill="#4b5563"/>
-    <ellipse cx="39" cy="52" rx="6" ry="7.5" fill="#fff"/><ellipse cx="61" cy="52" rx="6" ry="7.5" fill="#fff"/>
-    <circle cx="40" cy="54" r="3.8" fill="#3b2a00"/><circle cx="62" cy="54" r="3.8" fill="#3b2a00"/>
-    <circle cx="41.3" cy="52.3" r="1.3" fill="#fff"/><circle cx="63.3" cy="52.3" r="1.3" fill="#fff"/>
-    <circle cx="29" cy="63" r="4.5" fill="#ff8fa3" opacity=".55"/><circle cx="71" cy="63" r="4.5" fill="#ff8fa3" opacity=".55"/>
-    ${brows}${mouth}
-    <path d="M34 23 q16 -7 32 0 v6 q-16 -6 -32 0Z" fill="#0a1f44"/>
-    <path d="M50 4 L86 16 L50 28 L14 16Z" fill="#0b2a5b"/><path d="M50 4 L86 16 L50 20 L14 16Z" fill="#163f85"/>
-    <path d="M74 20 v14" stroke="#ffb800" stroke-width="2.5" stroke-linecap="round"/><circle cx="74" cy="36" r="3.5" fill="#ffb800"/>
-  </svg>`;
+/* ------------------------------ MASCOTE (robô Aprovaê+) ------------------------------ */
+// Cada pose é um arquivo próprio em /assets/mascote/ (WebP + PNG de reserva).
+// Para criar uma pose nova: salve robo-NOME.webp e robo-NOME.png na pasta e registre aqui [largura, altura].
+const ROBO = {
+  principal: [478, 605], joinha: [478, 605], estudando: [278, 271], notebook: [255, 251],
+  comemoracao: [235, 286], conquista: [263, 285], duvida: [237, 254], atencao: [249, 250],
+  revisao: [235, 243], planejamento: [295, 241], sus: [276, 345], saquarema: [331, 349],
+  legislacao: [317, 343], graduacao: [285, 360], campo: [292, 344]
+};
+const ROBO_ALT = {
+  principal: 'Robô Aprovaê+ fazendo sinal de positivo', joinha: 'Robô Aprovaê+ fazendo sinal de positivo',
+  estudando: 'Robô Aprovaê+ lendo um livro', notebook: 'Robô Aprovaê+ estudando no notebook',
+  comemoracao: 'Robô Aprovaê+ comemorando', conquista: 'Robô Aprovaê+ com troféu e medalha',
+  duvida: 'Robô Aprovaê+ pensativo', atencao: 'Robô Aprovaê+ com uma ideia importante',
+  revisao: 'Robô Aprovaê+ com checklist', planejamento: 'Robô Aprovaê+ mostrando gráfico de evolução',
+  sus: 'Robô Aprovaê+ de jaleco e estetoscópio', saquarema: 'Robô Aprovaê+ com roupa de praia e prancha',
+  legislacao: 'Robô Aprovaê+ de toga com livro jurídico', graduacao: 'Robô Aprovaê+ de beca',
+  campo: 'Robô Aprovaê+ de colete com prancheta'
+};
+/** Robô na altura pedida (px). pose: chave de ROBO. opts: { float, enter, decorative, eager, cls } */
+function mascot(size = 96, pose = 'principal', opts = {}) {
+  if (!ROBO[pose]) pose = 'principal';
+  const [w, h] = ROBO[pose];
+  const W = Math.round(size * w / h);
+  const cls = ['robo', opts.float ? 'robo-float' : '', opts.enter === false ? '' : 'robo-enter', opts.cls || ''].join(' ').trim();
+  const alt = opts.decorative ? '' : ROBO_ALT[pose];
+  return `<picture class="${cls}" style="--rw:${W}px;--rh:${size}px"><source srcset="assets/mascote/robo-${pose}.webp" type="image/webp"><img src="assets/mascote/robo-${pose}.png" width="${W}" height="${size}" alt="${alt}" ${opts.eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" draggable="false"></picture>`;
 }
 const speech = html => `<div class="speech">${html}</div>`;
 
@@ -162,8 +170,9 @@ function renderLanding() {
   document.body.className = 'page-landing';
   const cards = PRODUCTS.map(p => `
     <${p.ativo ? `button onclick="AP.go('concursos')"` : 'div aria-disabled="true"'} class="product ${p.ativo ? 'is-on' : 'is-off'}">
+      <span class="product-robo" aria-hidden="true">${mascot(p.ativo ? 132 : 92, p.robo, { decorative: true, enter: false })}</span>
       <span class="product-ico">${p.ico}</span>
-      <span class="product-name">Aprova<b>ê</b><i>+</i>${p.nome}</span>
+      <span class="product-name">Aprova<b>ê</b><i>+</i><wbr>${p.nome}</span>
       <span class="product-desc">${p.desc}</span>
       ${p.ativo ? '<span class="product-cta">Entrar <span aria-hidden="true">›</span></span>' : '<span class="soon">Em breve</span>'}
     </${p.ativo ? 'button' : 'div'}>`).join('');
@@ -176,7 +185,7 @@ function renderLanding() {
           <h1>Aprenda de verdade,<br><span>uma fase por vez.</span></h1>
           <p>Lições curtas antes de cada quiz, questões no estilo da banca, flashcards e revisão dos seus erros. Tudo para você chegar confiante no dia da prova.</p>
         </div>
-        <div class="land-lumi">${mascot(150)}${speech('Escolha por onde começar! 👇')}</div>
+        <div class="land-lumi">${mascot(190, 'principal', { float: true, eager: true })}${speech('Escolha por onde começar! 👇')}</div>
       </div>
     </header>
     <section class="land-products" aria-label="Escolha sua trilha">${cards}</section>
@@ -198,6 +207,7 @@ function renderConcursos() {
     const started = saved && saved.onb;
     const d = daysTo(c.prova);
     return `<article class="contest">
+      <div class="contest-robo">${mascot(110, c.mascot || 'notebook', { decorative: true, enter: false })}</div>
       <div class="contest-top"><span class="tag tag-navy">${c.banca}</span><span class="tag tag-gold">${plural(c.vagas, 'vaga', 'vagas')}</span>${d ? `<span class="tag tag-red">faltam ${d} dias</span>` : ''}</div>
       <h2>${c.nome}</h2>
       <p class="contest-sub">${c.cargoGrupo}</p>
@@ -214,7 +224,7 @@ function renderConcursos() {
     </header>
     <div class="sub-title"><h1>${wordmark('Concursos')}</h1><p>Escolha o concurso que você vai prestar.</p></div>
     <section class="contests">${list}
-      <div class="contest contest-soon">${mascot(64)}<div><b>Novos concursos em breve</b><p>Estamos preparando as próximas trilhas a partir dos editais publicados.</p></div></div>
+      <div class="contest contest-soon">${mascot(84, 'planejamento')}<div><b>Novos concursos em breve</b><p>Estamos preparando as próximas trilhas a partir dos editais publicados.</p></div></div>
     </section>
   </div>`;
 }
@@ -226,7 +236,7 @@ function renderOnb() {
   let body = '', btn = '';
   if (s === 0) {
     body = `<div class="onb-center fade">
-      ${mascot(140)}
+      ${mascot(180, 'principal', { float: true, eager: true })}
       <h1>Oi! Eu sou o <span class="c-gold">Lumi</span>.</h1>
       <p>Vou acender as ideias certas até a sua aprovação no concurso de <b>${K.nome}</b>. Primeiro você aprende, depois pratica.</p>
       <div class="onb-feats"><div><span>📖</span>Lição curta</div><div><span>🎯</span>Quiz da banca</div><div><span>🃏</span>Flashcards</div></div>
@@ -236,7 +246,7 @@ function renderOnb() {
     const opts = Object.entries(K.cargos).map(([id, c]) => `<button onclick="AP.setCargo('${id}')" class="opt big ${S.cargo === id ? 'sel' : ''}">
       <span class="opt-emoji">${c.emoji}</span><span class="opt-main"><b>${c.nome}</b><small>${c.desc}</small></span><span class="opt-side">${c.vagas} vagas</span></button>`).join('');
     body = `<div class="onb-pad fade">
-      <div class="lumi-say">${mascot(64)}${speech('Para qual cargo você vai fazer a prova?')}</div>
+      <div class="lumi-say">${mascot(84, 'notebook')}${speech('Para qual cargo você vai fazer a prova?')}</div>
       <div class="info-pill">🏛️ <span><small>CONCURSO</small><b>${K.nome} • ${K.edital}</b></span></div>
       <div class="stack">${opts}</div>
       <p class="muted small">Português e Legislação são iguais para os dois cargos. Muda o bloco de Específicos.</p>
@@ -245,7 +255,7 @@ function renderOnb() {
   } else {
     const g = (v, t, d) => `<button onclick="AP.setGoal(${v})" class="opt big ${S.goal === v ? 'sel' : ''}"><span class="opt-main"><b>${t}</b><small>${d}</small></span><span class="opt-side">${v} XP/dia</span></button>`;
     body = `<div class="onb-pad fade">
-      <div class="lumi-say">${mascot(64)}${speech(`Faltam <b class="c-red">${daysTo(K.prova)} dias</b> para a prova. Qual vai ser seu ritmo?`)}</div>
+      <div class="lumi-say">${mascot(84, 'planejamento')}${speech(`Faltam <b class="c-red">${daysTo(K.prova)} dias</b> para a prova. Qual vai ser seu ritmo?`)}</div>
       <div class="stack">${g(30, 'Leve', '≈ 1 fase por dia')}${g(50, 'Firme', '≈ 2 fases por dia')}${g(100, 'Intenso', '≈ 4 fases por dia')}</div>
       <div class="note">💡 No ritmo <b>Firme</b>, você termina a trilha com folga e usa o resto do tempo para revisar seus erros.</div>
     </div>`;
@@ -289,7 +299,7 @@ function renderShell() {
     </aside>
     <div class="col-main">
       <header class="topbar">
-        <a href="#inicio" class="topbar-brand"><img src="assets/img/mark-96.png" alt="" width="30" height="30">${wordmark()}</a>
+        <a href="#inicio" class="topbar-brand"><img src="assets/img/mark-96.png" alt="" width="40" height="40">${wordmark()}</a>
         <div class="topbar-stats">${statChips()}</div>
       </header>
       <main class="main" id="main">${v}</main>
@@ -324,7 +334,7 @@ function railWidgets() {
       <p class="muted small">Corte do edital: ${K.corte} pontos.</p>
       <button class="link-btn" onclick="AP.tab('prog')">Ver meu desenvolvimento ›</button>
     </div>
-    <div class="card lumi-card">${mascot(54)}<p><b>Dica do Lumi:</b> Específicos valem 2/3 da prova. Cada acerto ali vale o triplo de um acerto de Legislação.</p></div>`;
+    <div class="card lumi-card">${mascot(70, 'atencao', { decorative: true })}<p><b>Dica do Lumi:</b> Específicos valem 2/3 da prova. Cada acerto ali vale o triplo de um acerto de Legislação.</p></div>`;
 }
 
 /* ---------- TRILHA ---------- */
@@ -354,7 +364,7 @@ function viewHome() {
     }).join('');
     return `<section class="unit">
       <div class="unit-banner" style="--c:${u.c};--cd:${u.cd}">
-        <div class="unit-emoji" aria-hidden="true">${u.emoji}</div>
+        <div class="unit-robo">${mascot(104, unitRobo(u), { decorative: true, enter: false })}</div>
         <small>UNIDADE ${ui + 1} • ${a.curto.toUpperCase()} • ${a.pts} PT${a.pts > 1 ? 'S' : ''} POR QUESTÃO</small>
         <h2>${u.title}</h2>
         <p>${u.sub}</p>
@@ -374,7 +384,7 @@ function viewHome() {
       <div class="bar-row"><div class="bar thin"><i style="width:${doneN / all.length * 100}%"></i></div><small>${Math.round(doneN / all.length * 100)}% da trilha</small></div></div></div>
     </div>
     ${units}
-    <div class="trail-end">${mascot(64)}<p>Quer estudar um assunto fora da ordem? Use a aba <b>Tópicos</b>.</p></div>
+    <div class="trail-end">${mascot(80, 'estudando', { decorative: true })}<p>Quer estudar um assunto fora da ordem? Use a aba <b>Tópicos</b>.</p></div>
   </div>`;
 }
 
@@ -414,7 +424,7 @@ function renderLesson() {
   let inner = '', canGo = true;
   if (isReady) {
     inner = `<div class="ready pop">
-      ${mascot(120, 'wow')}
+      ${mascot(140, 'atencao', { float: true })}
       <h2>Pronto para o quiz!</h2><p class="muted">Você acabou de ver:</p>
       <div class="stack">${cards.filter(c => c.t !== 'check').map(c => `<div class="seen" style="--c:${u.c}"><span>✓</span>${c.title}</div>`).join('')}</div>
       <p class="muted small">🎯 ${f.quiz.length} questões • ❤️ 5 vidas • errou, a questão volta no final</p>
@@ -422,7 +432,7 @@ function renderLesson() {
   } else if (card.t === 'concept') {
     inner = `<div class="pop"><div class="lesson-ico">${card.ico}</div><h2 class="lesson-title">${card.title}</h2><div class="card-body" style="--uc:${u.c}">${card.body}</div></div>`;
   } else if (card.t === 'tip') {
-    inner = `<div class="pop"><div class="lumi-say">${mascot(70)}${speech('Guarda essa, que cai muito!')}</div>
+    inner = `<div class="pop"><div class="lumi-say">${mascot(88, 'atencao')}${speech('Guarda essa, que cai muito!')}</div>
       <div class="tipbox"><small>💡 ${card.title.toUpperCase()}</small><div class="card-body" style="--uc:#ffb800">${card.body}</div></div></div>`;
   } else if (card.t === 'compare') {
     const col = (h, items, cls) => `<div class="cmp ${cls}"><b>${h}</b><ul>${items.map(it => `<li>${it}</li>`).join('')}</ul></div>`;
@@ -512,7 +522,7 @@ function renderResult() {
   const tile = (c, label, val) => `<div class="tile" style="--tc:${c}"><small>${label}</small><b>${val}</b></div>`;
   $app.innerHTML = `<div class="focus">
     <div class="focus-body center result">
-      <div class="pop">${mascot(130, r.acc >= 60 ? 'happy' : 'wow')}</div>
+      ${mascot(170, r.mode === 'boss' ? 'conquista' : r.acc >= 60 ? 'comemoracao' : 'joinha', { float: true })}
       ${showStars ? `<div class="stars">${[0, 1, 2].map(i => `<span class="${i < r.stars ? 'on' : 'off'}" style="animation-delay:${.2 + i * .2}s">★</span>`).join('')}</div>` : ''}
       <h1 class="c-gold">${titles[r.mode]}</h1>
       <p class="muted">${msg}</p>
@@ -528,7 +538,7 @@ function renderFail() {
   const z = UI.quiz;
   $app.innerHTML = `<div class="focus">
     <div class="focus-body center">
-      ${mascot(120, 'sad')}
+      ${mascot(150, 'duvida')}
       <h1>Suas vidas acabaram</h1>
       <p class="muted">Tudo bem! Cada erro foi salvo no <b>Caderno de Erros</b>. Rever a lição antes de tentar de novo costuma resolver.</p>
     </div>
@@ -585,7 +595,7 @@ function viewCards() {
   const all = visibleCards(); const known = fcKnown(); const rev = all.filter(c => S.cards[c.id] === 'review').length;
   let card;
   if (!list.length) {
-    card = `<div class="card empty">${mascot(80)}<p>${fc.only ? 'Nenhum card marcado para revisar neste filtro. Ótimo sinal!' : 'Nenhum card neste filtro.'}</p></div>`;
+    card = `<div class="card empty">${mascot(110, 'joinha')}<p>${fc.only ? 'Nenhum card marcado para revisar neste filtro. Ótimo sinal!' : 'Nenhum card neste filtro.'}</p></div>`;
   } else {
     const c = list[fc.idx]; const { u, f } = FASES[c.fid]; const st = S.cards[c.id];
     const badge = st === 'known' ? '<span class="tag tag-green">✓ DOMINADO</span>' : st === 'review' ? '<span class="tag tag-gold">⏳ REVISAR</span>' : '<span class="tag">NOVO</span>';
@@ -615,7 +625,7 @@ function viewReview() {
   const byArea = {}; keys.forEach(k => { const q = getQ(k); (byArea[q.unit.area] = byArea[q.unit.area] || []).push(q); });
   const list = keys.length ? Object.entries(byArea).map(([a, qs]) => `<div><small class="eyebrow" style="color:${K.areas[a].cor}">${K.areas[a].nome.toUpperCase()} • ${qs.length}</small>
       ${qs.map(q => `<div class="err-item"><small>${q.fase.topic}</small>${q.q.length > 120 ? q.q.slice(0, 120) + '…' : q.q}</div>`).join('')}</div>`).join('')
-    : `<div class="card empty">${mascot(80)}<p>Nenhum erro pendente. Quando você errar uma questão, ela aparece aqui para revisar.</p></div>`;
+    : `<div class="card empty">${mascot(110, 'revisao')}<p>Nenhum erro pendente. Quando você errar uma questão, ela aparece aqui para revisar.</p></div>`;
   return `<div class="page fade narrow">
     <div class="page-title"><h1>Revisão</h1><p class="muted">Errar faz parte do aprendizado. Aqui você transforma erro em acerto.</p></div>
     <div class="hero-card red">
@@ -668,7 +678,7 @@ function viewEdital() {
   const cg = K.cargos;
   return `<div class="page fade narrow">
     <button class="link-btn" onclick="AP.tab('home')">‹ Voltar para a trilha</button>
-    <div class="page-title"><h1>Edital em 1 minuto</h1><p class="muted">${K.edital} • ${K.nome} • Banca ${K.banca}</p></div>
+    <div class="page-title with-robo"><div><h1>Edital em 1 minuto</h1><p class="muted">${K.edital} • ${K.nome} • Banca ${K.banca}</p></div>${mascot(104, 'legislacao', { decorative: true })}</div>
     <div class="two">${Object.values(cg).map((c, i) => `<div class="hero-card ${i ? 'blue' : 'navy'}"><small>${c.curto}</small><h2>${c.vagas}</h2><p>vagas • ${c.nome}</p></div>`).join('')}</div>
     <div class="card"><small class="eyebrow">CARGO</small>${row('Salário', K.salario)}${row('Jornada', '40h semanais')}${row('Escolaridade', 'Ensino médio completo')}${row('ACS', 'Morar na área desde o edital')}</div>
     <div class="card"><small class="eyebrow">DATAS</small>${row('Inscrições', '17/11 a 22/12/2026')}${row('Taxa', 'R$ 94,00 (boleto até 23/12, 21h)')}${row('Prova objetiva', fmtDate(K.prova) + ' • 3 horas')}${row('ACS', 'Manhã: portão 8h, início 9h10')}${row('ACE', 'Tarde: portão 14h, início 15h10')}${row('Gabarito preliminar', '01/02/2027')}</div>
@@ -762,12 +772,12 @@ window.AP = {
   },
   confirmExit() {
     $layer.innerHTML = `<div class="overlay"></div><div class="sheet center-t" role="dialog" aria-modal="true">
-      ${mascot(80, 'sad')}<h3>Espera, não vai embora!</h3><p class="muted">Se sair agora, o progresso desta fase será perdido.</p>
+      ${mascot(110, 'duvida')}<h3>Espera, não vai embora!</h3><p class="muted">Se sair agora, o progresso desta fase será perdido.</p>
       <div class="stack"><button class="btn btn-navy" onclick="AP.closeSheet()">Continuar estudando</button><button class="danger-link" onclick="AP.home()">Sair da fase</button></div></div>`;
   },
   confirmReset() {
     $layer.innerHTML = `<div class="overlay" onclick="AP.closeSheet()"></div><div class="sheet center-t" role="dialog" aria-modal="true">
-      ${mascot(70, 'sad')}<h3>Zerar tudo?</h3><p class="muted">XP, estrelas, sequência, flashcards e caderno de erros deste concurso serão apagados deste aparelho.</p>
+      ${mascot(100, 'atencao')}<h3>Zerar tudo?</h3><p class="muted">XP, estrelas, sequência, flashcards e caderno de erros deste concurso serão apagados deste aparelho.</p>
       <div class="stack"><button class="btn btn-red" onclick="AP.doReset()">Sim, zerar</button><button class="link-btn" onclick="AP.closeSheet()">Cancelar</button></div></div>`;
   },
   doReset() { store.del(keyOf(K.id)); const id = K.id; K = null; openConcurso(id); render(); },

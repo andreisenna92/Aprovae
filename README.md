@@ -5,7 +5,7 @@ Trilhas de estudo no estilo "fases": cada fase começa com uma **lição curta**
 Produtos:
 
 - **Aprovaê+Concursos** (disponível): concurso da Prefeitura de Saquarema/RJ, PSP nº 001/2026 (IBAM), cargos ACS e ACE
-- **Aprovaê+ENEM**, **Aprovaê+ENCCEJA** e **Aprovaê+Graduação** (em breve)
+- **Aprovaê+ENEM**, **Aprovaê+ENCCEJA**, **Aprovaê+Faetec** e **Aprovaê+Graduação** (em breve)
 
 O site é **100% estático**: HTML, CSS e JavaScript puros, sem framework e sem etapa de build.
 
@@ -20,7 +20,8 @@ assets/
   js/app.js                       telas, navegação, quiz, flashcards, progresso
   js/map.js                       desenho da trilha (grama, caminho e ilustrações)
   js/content/saquarema-2026.js    conteúdo do concurso: lições, questões, flashcards
-  img/                            logo, favicon e ícones do app
+  img/                            logo, favicon, ícones do app e imagem de prévia (og-aprovae.jpg)
+  mascote/                        robô oficial: uma pose por arquivo (WebP + PNG transparente)
 ```
 
 Rotas:
@@ -80,6 +81,20 @@ Formato de cada fase:
 Nas questões, a alternativa correta pode ficar em qualquer posição (o índice indica qual é). O app embaralha as alternativas a cada tentativa.
 
 Temas de ilustração da trilha (`theme` da unidade): `sus`, `campo`, `letras` e `saquarema`. Para criar outro tema, adicione desenhos em `DECOR` e uma lista em `THEMES` no `map.js`.
+
+## Mascote (robô Aprovaê+)
+
+Cada pose é um arquivo próprio em `assets/mascote/`: `robo-principal`, `robo-joinha`, `robo-estudando`, `robo-notebook`, `robo-sus`, `robo-saquarema`, `robo-legislacao`, `robo-graduacao`, `robo-campo`, `robo-conquista`, `robo-duvida`, `robo-atencao`, `robo-revisao`, `robo-planejamento` e `robo-comemoracao`.
+
+- Para usar uma pose numa tela: `mascot(alturaEmPx, 'nome-da-pose')`, em `app.js`.
+- Para escolher a pose de uma unidade: campo `mascot: 'sus'` na unidade, no arquivo de conteúdo.
+- Para criar uma pose nova: salve `robo-NOME.webp` e `robo-NOME.png` na pasta e registre o tamanho em `ROBO`, em `app.js`.
+
+## Prévia no WhatsApp
+
+As tags `og:*` do `index.html` usam `assets/img/og-aprovae.jpg` (1200×630). Enquanto o site não tem domínio próprio, a imagem é servida direto do GitHub (`raw.githubusercontent.com`). Quando tiver domínio, troque a URL nas tags `og:image`, `og:image:secure_url` e `twitter:image`.
+
+O WhatsApp guarda a prévia em cache. Se ela não atualizar, compartilhe o link com um final diferente, por exemplo `?v=2`.
 
 ## Conteúdo e direitos autorais
 

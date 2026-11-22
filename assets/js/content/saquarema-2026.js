@@ -19,7 +19,7 @@ const K = (title, lh, li, rh, ri) => ({ t: 'compare', title, lh, li, rh, ri });
 /* ------------------------------ CONTEÚDO ------------------------------ */
 const UNITS = [
   {
-    id: 'sus', area: 'leg', c: '#2f80ed', cd: '#1d5fbf', emoji: '🏛️', theme: 'sus',
+    id: 'sus', mascot: 'sus', area: 'leg', c: '#2f80ed', cd: '#1d5fbf', emoji: '🏛️', theme: 'sus',
     title: 'Base do SUS', sub: 'Constituição, leis, história, redes e informação',
     fases: [
       {
@@ -78,7 +78,7 @@ const UNITS = [
     ]
   },
   {
-    id: 'esp', area: 'esp', c: '#f97316', cd: '#c2570c', emoji: '🧭', theme: 'campo',
+    id: 'esp', mascot: 'campo', area: 'esp', c: '#f97316', cd: '#c2570c', emoji: '🧭', theme: 'campo',
     title: 'Específicos do cargo', sub: 'O bloco que vale 60 dos 90 pontos na prova',
     fases: [
       {
@@ -188,7 +188,7 @@ const UNITS = [
     ]
   },
   {
-    id: 'port', area: 'port', c: '#8b5cf6', cd: '#6d3fd6', emoji: '✍️', theme: 'letras',
+    id: 'port', mascot: 'estudando', area: 'port', c: '#8b5cf6', cd: '#6d3fd6', emoji: '✍️', theme: 'letras',
     title: 'Língua Portuguesa', sub: '10 questões de 2 pontos cada',
     fases: [
       {
@@ -258,7 +258,7 @@ const UNITS = [
     ]
   },
   {
-    id: 'mun', area: 'leg', c: '#06a6c9', cd: '#04809b', emoji: '🌊', theme: 'saquarema',
+    id: 'mun', mascot: 'saquarema', area: 'leg', c: '#06a6c9', cd: '#04809b', emoji: '🌊', theme: 'saquarema',
     title: 'Saquarema – RJ', sub: 'História, Alberto de Oliveira, Lei Orgânica e geografia',
     fases: [
       {
@@ -636,6 +636,7 @@ FC_RAW.push(
 window.APROVAE_CONCURSOS = window.APROVAE_CONCURSOS || {};
 window.APROVAE_CONCURSOS['saquarema-2026'] = {
   id: 'saquarema-2026',
+  mascot: 'notebook',
   nome: 'Prefeitura de Saquarema/RJ',
   cargoGrupo: 'Agentes de Saúde (ACS e ACE)',
   edital: 'Processo Seletivo Público nº 001/2026',
